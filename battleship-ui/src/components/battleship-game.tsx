@@ -125,10 +125,18 @@ export function GameScreen() {
       </button>
       <div className="w-full flex flex-col items-center">
         <div id="opponentGrids">
-          <BattleshipGrid 
-            grid={getTheGrid()} 
-            playerName={"Opps"} 
-            editable={true} />
+          <div className="grid">
+            <BattleshipGrid 
+              grid={getTheGrid()} 
+              playerName={"Opps"} 
+              editable={true} />
+          </div>
+          <div className="grid hidden">
+            <BattleshipGrid 
+              grid={getTheGrid()} 
+              playerName={"Opps"} 
+              editable={true} />
+          </div>
         </div>
         <div className="flex mt-4 space-x-2">
           <span id="dot0" className="w-3 h-3 rounded-full bg-gray-400"></span>
