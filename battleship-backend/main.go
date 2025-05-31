@@ -1,278 +1,143 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
-	"log"
+	"errors"
+	"fmt"
+	"log/slog"
 	"net/http"
-	"sync"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
+	"github.com/olahol/melody"
 )
 
-var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
-
-type MatchState string
-
-const (
-	WAITING_FOR_PLAYERS MatchState = "WAITING_FOR_PLAYERS"
-	ALL_PLAYERS_JOINED  MatchState = "ALL_PLAYERS_JOINED"
-	GAME_BEGIN          MatchState = "GAME_BEGIN"
-)
-
-type Orientation string
-
-const (
-	HORIZONTAL Orientation = "HORIZONTAL"
-	VERTICAL   Orientation = "VERTICAL"
-)
-
-type BoardBlock struct {
-	BlockLength      int         `json:"blockLength"`
-	BlockStartPos    Position    `json:"blockStartPos"`
-	BlockOrientation Orientation `json:"blockOrientation"`
+func createSessionID(s *melody.Session) string {
+	newUUID, _ := uuid.NewUUID()
+	sessionID := newUUID.String()
+	s.Set("sessionID", sessionID)
+	slog.Debug("Created new sessionID", "sessionID", sessionID)
+	return sessionID
 }
 
-type Position struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+type Req struct {
+	EventType string          `json:"event_type"`
+	Payload   json.RawMessage `json:"payload"`
 }
 
-type Player struct {
-	UserName    string
-	Conn        *websocket.Conn
-	Board       []BoardBlock
-	Ready       bool
-	PlayerIndex int
+type Res struct {
+	EventType string `json:"event_type"`
+	Payload   any    `json:"payload"`
 }
 
-type Room struct {
-	Code       string
-	Players    []*Player
-	State      MatchState
-	Mutex      sync.Mutex
-	TurnIndex  int
-	Eliminated map[string]bool
+type SignupDto struct {
+	Email string `json:"email"`
 }
 
-var rooms = make(map[string]*Room)
-var roomsMutex sync.Mutex
+type MsgHandler = func(context.Context, Req, *melody.Session, *melody.Melody) error
 
-type Message struct {
-	Event string          `json:"event"`
-	Data  json.RawMessage `json:"data"`
-}
-
-func main() {
-	http.HandleFunc("/ws", handleConnection)
-	log.Println("Server started at :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func handleConnection(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("WebSocket upgrade failed:", err)
-		return
+func SignupHandler(
+	ctx context.Context,
+	msg Req,
+	s *melody.Session,
+	m *melody.Melody,
+) error {
+	var payload SignupDto
+	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
+		return err
 	}
-	defer conn.Close()
+	slog.Debug("Handling signup", "req", payload)
+	fmt.Println(payload.Email)
+	sendMsg(
+		m, s,
+		"SIGNED_UP",
+		map[string]any{
+			"msg": "Signup successful",
+		},
+	)
+	return nil
+}
 
-	for {
-		var msg Message
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			log.Println("read error:", err)
+var routes map[string]MsgHandler
+
+func setupWebSockets(ctx context.Context) {
+	routes = map[string]MsgHandler{
+		"signup": SignupHandler,
+	}
+	m := melody.New()
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		m.HandleRequest(w, r)
+	})
+	m.HandleConnect(func(s *melody.Session) {
+		sessionID := createSessionID(s)
+		slog.Info("New buddy connected", "sessionID", sessionID)
+		sendMsg(m, s, "WELCOME", map[string]any{
+			"msg": "Welcome to our server, your sessionID is " + sessionID,
+		})
+	})
+	m.HandleMessage(func(s *melody.Session, msg []byte) {
+		var req Req
+		if err := json.Unmarshal(msg, &req); err != nil {
+			sendError(m, s, errors.New("Request could not be parsed"))
 			return
 		}
 
-		switch msg.Event {
-		case "create_room":
-			handleCreateRoom(conn, msg.Data)
-		case "join_room":
-			handleJoinRoom(conn, msg.Data)
-		case "setup_board":
-			handleSetupBoard(conn, msg.Data)
-		case "bomb_it":
-			handleBombIt(conn, msg.Data)
-		}
-	}
-}
-
-type CreateRoomRequest struct {
-	UserName string `json:"userName"`
-}
-
-type JoinRoomRequest struct {
-	UserName string `json:"userName"`
-	RoomCode string `json:"roomCode"`
-}
-
-type SetupBoardRequest struct {
-	UserName    string       `json:"userName"`
-	RoomCode    string       `json:"roomCode"`
-	BoardConfig []BoardBlock `json:"boardConfig"`
-}
-
-type BombRequest struct {
-	RoomCode       string `json:"roomCode"`
-	TargetUserName string `json:"targetUserName"`
-	X              int    `json:"x"`
-	Y              int    `json:"y"`
-}
-
-func handleCreateRoom(conn *websocket.Conn, data json.RawMessage) {
-	var req CreateRoomRequest
-	json.Unmarshal(data, &req)
-
-	roomCode := uuid.NewString()[:6]
-	player := &Player{UserName: req.UserName, Conn: conn, PlayerIndex: 0}
-	room := &Room{
-		Code:       roomCode,
-		Players:    []*Player{player},
-		State:      WAITING_FOR_PLAYERS,
-		Eliminated: map[string]bool{},
-	}
-
-	roomsMutex.Lock()
-	rooms[roomCode] = room
-	roomsMutex.Unlock()
-
-	conn.WriteJSON(map[string]any{
-		"event":    "room_created",
-		"roomCode": roomCode,
-	})
-}
-
-func handleJoinRoom(conn *websocket.Conn, data json.RawMessage) {
-	var req JoinRoomRequest
-	json.Unmarshal(data, &req)
-
-	roomsMutex.Lock()
-	room, ok := rooms[req.RoomCode]
-	roomsMutex.Unlock()
-
-	if !ok {
-		conn.WriteJSON(map[string]any{"event": "error", "message": "Room not found"})
-		return
-	}
-
-	room.Mutex.Lock()
-	defer room.Mutex.Unlock()
-
-	if len(room.Players) >= 3 {
-		conn.WriteJSON(map[string]any{"event": "error", "message": "Room is full"})
-		return
-	}
-
-	player := &Player{UserName: req.UserName, Conn: conn, PlayerIndex: len(room.Players)}
-	room.Players = append(room.Players, player)
-
-	if len(room.Players) == 3 {
-		room.State = ALL_PLAYERS_JOINED
-	}
-
-	conn.WriteJSON(map[string]any{
-		"event":   "joined_room",
-		"player#": player.PlayerIndex + 1,
-	})
-}
-
-func handleSetupBoard(conn *websocket.Conn, data json.RawMessage) {
-	var req SetupBoardRequest
-	json.Unmarshal(data, &req)
-
-	room := rooms[req.RoomCode]
-	room.Mutex.Lock()
-	defer room.Mutex.Unlock()
-
-	for _, player := range room.Players {
-		if player.UserName == req.UserName {
-			player.Board = req.BoardConfig
-			player.Ready = true
-			break
-		}
-	}
-
-	conn.WriteJSON(map[string]any{"event": "board_setup_ack"})
-
-	ready := true
-	for _, p := range room.Players {
-		if !p.Ready {
-			ready = false
-			break
-		}
-	}
-	if ready {
-		room.State = GAME_BEGIN
-		broadcast(room, map[string]any{
-			"event":         "game_start",
-			"currentPlayer": room.Players[room.TurnIndex].UserName,
-		})
-	}
-}
-
-func handleBombIt(conn *websocket.Conn, data json.RawMessage) {
-	var req BombRequest
-	json.Unmarshal(data, &req)
-
-	room := rooms[req.RoomCode]
-	room.Mutex.Lock()
-	defer room.Mutex.Unlock()
-
-	result := "MISS"
-	anotherTurn := false
-
-	for _, p := range room.Players {
-		if p.UserName == req.TargetUserName && !room.Eliminated[p.UserName] {
-			for _, block := range p.Board {
-				if inBlock(req.X, req.Y, block) {
-					result = "HIT"
-					anotherTurn = true
-					break
-				}
+		if routeFn, found := routes[req.EventType]; found {
+			if err := routeFn(ctx, req, s, m); err != nil {
+				sendError(
+					m, s,
+					errors.Join(
+						errors.New("Failed to invoke Event: "+req.EventType),
+						err,
+					),
+				)
+				return
 			}
-			break
-		}
-	}
 
-	if !anotherTurn {
-		for {
-			room.TurnIndex = (room.TurnIndex + 1) % 3
-			if !room.Eliminated[room.Players[room.TurnIndex].UserName] {
-				break
-			}
-		}
-	}
-
-	conn.WriteJSON(map[string]any{
-		"event":       "bomb_result",
-		"result":      result,
-		"anotherTurn": anotherTurn,
-	})
-
-	broadcast(room, map[string]any{
-		"event":         "next_turn",
-		"currentPlayer": room.Players[room.TurnIndex].UserName,
-	})
-}
-
-func inBlock(x int, y int, block BoardBlock) bool {
-	for i := range block.BlockLength {
-		if block.BlockOrientation == HORIZONTAL {
-			if x == block.BlockStartPos.X+i && y == block.BlockStartPos.Y {
-				return true
-			}
 		} else {
-			if x == block.BlockStartPos.X && y == block.BlockStartPos.Y+i {
-				return true
-			}
+			sendError(m, s, errors.New("Unknown Event: "+req.EventType))
+			return
 		}
-	}
-	return false
+
+	})
 }
 
-func broadcast(room *Room, msg any) {
-	for _, p := range room.Players {
-		p.Conn.WriteJSON(msg)
+func sendMsg(
+	m *melody.Melody,
+	s *melody.Session,
+	eventType string,
+	payload any,
+) {
+	r := Res{
+		EventType: eventType,
+		Payload:   payload,
 	}
+	respBytes, _ := json.Marshal(r)
+	m.BroadcastMultiple(respBytes, []*melody.Session{s})
+}
+
+func sendError(m *melody.Melody, s *melody.Session, err error) {
+	r := Res{
+		EventType: "error",
+		Payload: map[string]any{
+			"msg": err.Error(),
+		},
+	}
+	respBytes, _ := json.Marshal(r)
+	m.BroadcastMultiple(respBytes, []*melody.Session{s})
+}
+
+func main() {
+	slog.SetLogLoggerLevel(slog.LevelDebug.Level())
+	ctx := context.Background()
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := w.Write([]byte(`gggg`)); err != nil {
+			slog.Error("Failed to send response")
+		}
+	})
+
+	setupWebSockets(ctx)
+
+	slog.Info("Listening on :5000")
+	http.ListenAndServe(":5000", nil)
 }
