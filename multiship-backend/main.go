@@ -9,10 +9,12 @@ import (
 	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/handlers"
 )
 
-func setupWebSocketsV2() {
+func setupWebSockets() {
 	wt := transport.NewWebsocketTransport()
-	wt.HandleEvent(events.Signup, handlers.SignupHandler)
 	wt.InitEventHandler()
+
+	// Add event handlers
+	wt.HandleEvent(events.Signup, handlers.SignupHandler)
 }
 
 func main() {
@@ -23,7 +25,7 @@ func main() {
 		}
 	})
 
-	setupWebSocketsV2()
+	setupWebSockets()
 
 	slog.Info("Listening on :5000")
 	http.ListenAndServe(":5000", nil)
