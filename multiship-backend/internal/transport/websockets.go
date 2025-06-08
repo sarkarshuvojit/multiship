@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/olahol/melody"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/events"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/utils"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/utils"
 )
 
 type EventHandler = func(context.Context, events.InboundEvent) error

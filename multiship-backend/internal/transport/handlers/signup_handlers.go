@@ -7,11 +7,11 @@ import (
 	"log/slog"
 
 	"github.com/olahol/melody"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/dto"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/events"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/state"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/utils"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/dto"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/state"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/utils"
 )
 
 func SignupHandler(
