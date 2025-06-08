@@ -114,7 +114,8 @@ func (wt *WebsocketTransport) hydrateContext(
 	}
 	return ctx
 }
-func (wt *WebsocketTransport) InitEventHandler() error {
+
+func (wt *WebsocketTransport) initConnectHandler() error {
 	wt.m.HandleConnect(func(s *melody.Session) {
 		ctx := wt.hydrateContext(context.Background(), s)
 		sessionID := createSessionID(s)
@@ -123,6 +124,9 @@ func (wt *WebsocketTransport) InitEventHandler() error {
 			"msg": "Welcome to our server, your sessionID is " + sessionID,
 		})
 	})
+	return nil
+}
+func (wt *WebsocketTransport) initEventHandlers() error {
 	wt.m.HandleMessage(func(s *melody.Session, msg []byte) {
 		ctx := context.Background()
 		var req events.InboundEvent
@@ -150,6 +154,12 @@ func (wt *WebsocketTransport) InitEventHandler() error {
 		}
 
 	})
-
 	return nil
+}
+
+func (wt *WebsocketTransport) InitHandlers() error {
+	return errors.Join(
+		wt.initConnectHandler(),
+		wt.initEventHandlers(),
+	)
 }
