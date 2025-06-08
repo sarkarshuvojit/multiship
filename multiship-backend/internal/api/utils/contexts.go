@@ -7,10 +7,10 @@ import (
 type ContextKey string
 
 const (
-	Melody             ContextKey = "melody"
-	Session                       = "session"
-	WebsocketTransport            = "wt"
-	Redis                         = "redis"
+	Melody       ContextKey = "melody"
+	Session                 = "session"
+	WebsocketAPI            = "wsapi"
+	Redis                   = "redis"
 )
 
 func SetToContext[T any](

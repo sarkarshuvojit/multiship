@@ -1,4 +1,4 @@
-package transport
+package api
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/olahol/melody"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/events"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/utils"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 )
 
 type EventHandler = func(context.Context, events.InboundEvent) error
