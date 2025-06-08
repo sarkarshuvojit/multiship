@@ -4,11 +4,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/events"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/handlers"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/state"
-	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/utils"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/handlers"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/state"
+	"github.com/sarkarshuvojit/multiship-backend/internal/transport/utils"
 )
 
 func setupWebSockets() {
