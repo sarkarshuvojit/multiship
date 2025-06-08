@@ -1,0 +1,13 @@
+name: multiship-redis
+services:
+    multiship-state:
+        container_name: multiship-state
+        image: redis:6.2-alpine
+        ports:
+          - '6379:6379'
+        command: redis-server --loglevel warning --requirepass localpass
+        volumes: 
+          - cache:/data
+volumes:
+  cache:
+    driver: local
