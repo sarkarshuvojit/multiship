@@ -18,6 +18,7 @@ type EventHandler = func(context.Context, events.InboundEvent) error
 // Errors
 var (
 	HandlerExistsErr = errors.New("Event handler already present")
+	DepExistsErr     = errors.New("Dependency already present")
 	ReqParsingErr    = errors.New("Request could not be parsed")
 	UnknownEvent     = errors.New("Unknown Event")
 )
@@ -25,6 +26,7 @@ var (
 type WebsocketTransport struct {
 	m      *melody.Melody
 	routes map[events.InboundEventType]EventHandler
+	deps   map[utils.ContextKey]any
 }
 
 func NewWebsocketTransport() *WebsocketTransport {
@@ -35,7 +37,20 @@ func NewWebsocketTransport() *WebsocketTransport {
 	return &WebsocketTransport{
 		m:      m,
 		routes: map[events.InboundEventType]EventHandler{},
+		deps:   map[utils.ContextKey]any{},
 	}
+}
+
+func (wt *WebsocketTransport) AddDependency(
+	depKey utils.ContextKey,
+	dep any,
+) error {
+	if _, found := wt.deps[depKey]; found {
+		return DepExistsErr
+	}
+
+	wt.deps[depKey] = dep
+	return nil
 }
 
 func (wt *WebsocketTransport) HandleEvent(
@@ -104,12 +119,18 @@ func createSessionID(s *melody.Session) string {
 func (wt *WebsocketTransport) hydrateContext(
 	ctx context.Context, s *melody.Session,
 ) context.Context {
+	// ctx provided by WT
 	ctxVariables := map[utils.ContextKey]any{
 		utils.WebsocketTransport: wt,
 		utils.Melody:             wt.m,
 		utils.Session:            s,
 	}
 	for k, v := range ctxVariables {
+		ctx = utils.SetToContext(ctx, k, v)
+	}
+
+	// Extended Dependencies
+	for k, v := range wt.deps {
 		ctx = utils.SetToContext(ctx, k, v)
 	}
 	return ctx
@@ -126,7 +147,7 @@ func (wt *WebsocketTransport) initConnectHandler() error {
 	})
 	return nil
 }
-func (wt *WebsocketTransport) initEventHandlers() error {
+func (wt *WebsocketTransport) initEventHandler() error {
 	wt.m.HandleMessage(func(s *melody.Session, msg []byte) {
 		ctx := context.Background()
 		var req events.InboundEvent
@@ -135,6 +156,7 @@ func (wt *WebsocketTransport) initEventHandlers() error {
 			return
 		}
 
+		// Event routing
 		if routeFn, found := wt.routes[req.EventType]; found {
 			ctx = wt.hydrateContext(ctx, s)
 			if err := routeFn(ctx, req); err != nil {
@@ -160,6 +182,6 @@ func (wt *WebsocketTransport) initEventHandlers() error {
 func (wt *WebsocketTransport) InitHandlers() error {
 	return errors.Join(
 		wt.initConnectHandler(),
-		wt.initEventHandlers(),
+		wt.initEventHandler(),
 	)
 }

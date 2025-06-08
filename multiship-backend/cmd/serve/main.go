@@ -7,11 +7,20 @@ import (
 	"github.com/sarkarshuvojit/multiship-backend/pkg/transport"
 	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/events"
 	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/handlers"
+	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/state"
+	"github.com/sarkarshuvojit/multiship-backend/pkg/transport/utils"
 )
 
 func setupWebSockets() {
 	wt := transport.NewWebsocketTransport()
 	wt.InitHandlers()
+
+	// Add Dependencies
+	db, err := state.NewRedisState("localhost:6379", 0, "localpass")
+	if err != nil {
+		panic("Cannot connect to redis")
+	}
+	wt.AddDependency(utils.Redis, db)
 
 	// Add event handlers
 	wt.HandleEvent(events.Signup, handlers.SignupHandler)

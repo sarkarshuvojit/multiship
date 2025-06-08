@@ -10,6 +10,7 @@ const (
 	Melody             ContextKey = "melody"
 	Session                       = "session"
 	WebsocketTransport            = "wt"
+	Redis                         = "redis"
 )
 
 func SetToContext[T any](
