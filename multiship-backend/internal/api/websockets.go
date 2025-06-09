@@ -15,51 +15,49 @@ import (
 
 type EventHandler = func(context.Context, events.InboundEvent) error
 
-// Errors
-
-type WebsocketTransport struct {
+type WebsocketAPI struct {
 	m      *melody.Melody
 	routes map[events.InboundEventType]EventHandler
 	deps   map[utils.ContextKey]any
 }
 
-func NewWebsocketTransport() *WebsocketTransport {
+func NewWebsocketTransport() *WebsocketAPI {
 	m := melody.New()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		m.HandleRequest(w, r)
 	})
-	return &WebsocketTransport{
+	return &WebsocketAPI{
 		m:      m,
 		routes: map[events.InboundEventType]EventHandler{},
 		deps:   map[utils.ContextKey]any{},
 	}
 }
 
-func (wt *WebsocketTransport) AddDependency(
+func (ws *WebsocketAPI) AddDependency(
 	depKey utils.ContextKey,
 	dep any,
 ) error {
-	if _, found := wt.deps[depKey]; found {
+	if _, found := ws.deps[depKey]; found {
 		return events.DepExistsErr
 	}
 
-	wt.deps[depKey] = dep
+	ws.deps[depKey] = dep
 	return nil
 }
 
-func (wt *WebsocketTransport) HandleEvent(
+func (ws *WebsocketAPI) HandleEvent(
 	eventType events.InboundEventType,
 	handler EventHandler,
 ) error {
-	if _, found := wt.routes[eventType]; found {
+	if _, found := ws.routes[eventType]; found {
 		return events.HandlerExistsErr
 	}
 
-	wt.routes[eventType] = handler
+	ws.routes[eventType] = handler
 	return nil
 }
 
-func (wt WebsocketTransport) SendResponse(
+func (ws WebsocketAPI) SendResponse(
 	ctx context.Context,
 	eventType events.OutboundEventType,
 	payload any,
@@ -70,10 +68,10 @@ func (wt WebsocketTransport) SendResponse(
 		Payload:   payload,
 	}
 	respBytes, _ := json.Marshal(r)
-	wt.m.BroadcastMultiple(respBytes, []*melody.Session{s})
+	ws.m.BroadcastMultiple(respBytes, []*melody.Session{s})
 }
 
-func (wt WebsocketTransport) SendMsgTo(
+func (ws WebsocketAPI) SendMsgTo(
 	ctx context.Context,
 	eventType events.OutboundEventType,
 	payload any,
@@ -84,10 +82,10 @@ func (wt WebsocketTransport) SendMsgTo(
 		Payload:   payload,
 	}
 	respBytes, _ := json.Marshal(r)
-	wt.m.BroadcastMultiple(respBytes, []*melody.Session{s})
+	ws.m.BroadcastMultiple(respBytes, []*melody.Session{s})
 }
 
-func (wt WebsocketTransport) SendErr(
+func (ws WebsocketAPI) SendErr(
 	ctx context.Context,
 	s *melody.Session,
 	err error,
@@ -99,7 +97,7 @@ func (wt WebsocketTransport) SendErr(
 		},
 	}
 	respBytes, _ := json.Marshal(r)
-	wt.m.BroadcastMultiple(respBytes, []*melody.Session{s})
+	ws.m.BroadcastMultiple(respBytes, []*melody.Session{s})
 }
 
 func createSessionID(s *melody.Session) string {
@@ -110,13 +108,13 @@ func createSessionID(s *melody.Session) string {
 	return sessionID
 }
 
-func (wt *WebsocketTransport) hydrateContext(
+func (ws *WebsocketAPI) hydrateContext(
 	ctx context.Context, s *melody.Session,
 ) context.Context {
 	// ctx provided by WT
 	ctxVariables := map[utils.ContextKey]any{
-		utils.WebsocketAPI: wt,
-		utils.Melody:       wt.m,
+		utils.WebsocketAPI: ws,
+		utils.Melody:       ws.m,
 		utils.Session:      s,
 	}
 	for k, v := range ctxVariables {
@@ -124,43 +122,43 @@ func (wt *WebsocketTransport) hydrateContext(
 	}
 
 	// Extended Dependencies
-	for k, v := range wt.deps {
+	for k, v := range ws.deps {
 		ctx = utils.SetToContext(ctx, k, v)
 	}
 	return ctx
 }
 
-func (wt *WebsocketTransport) initConnectHandler() error {
-	wt.m.HandleConnect(func(s *melody.Session) {
-		ctx := wt.hydrateContext(context.Background(), s)
+func (ws *WebsocketAPI) initConnectHandler() error {
+	ws.m.HandleConnect(func(s *melody.Session) {
+		ctx := ws.hydrateContext(context.Background(), s)
 		sessionID := createSessionID(s)
 		slog.Info("New user connected", "sessionID", sessionID)
-		wt.SendResponse(ctx, events.Welcome, map[string]any{
+		ws.SendResponse(ctx, events.Welcome, map[string]any{
 			"msg":       "Welcome to our server",
 			"sessionId": sessionID,
 		})
 	})
 	return nil
 }
-func (wt *WebsocketTransport) initEventHandler() error {
-	wt.m.HandleMessage(func(s *melody.Session, msg []byte) {
+func (ws *WebsocketAPI) initEventHandler() error {
+	ws.m.HandleMessage(func(s *melody.Session, msg []byte) {
 		ctx := context.Background()
 		var req events.InboundEvent
 		if err := json.Unmarshal(msg, &req); err != nil {
-			wt.SendErr(ctx, s, events.ReqParsingErr)
+			ws.SendErr(ctx, s, events.ReqParsingErr)
 			return
 		}
 
 		// Event routing
-		if routeFn, found := wt.routes[req.EventType]; found {
-			ctx = wt.hydrateContext(ctx, s)
+		if routeFn, found := ws.routes[req.EventType]; found {
+			ctx = ws.hydrateContext(ctx, s)
 			if err := routeFn(ctx, req); err != nil {
-				wt.SendErr(ctx, s, err)
+				ws.SendErr(ctx, s, err)
 				return
 			}
 
 		} else {
-			wt.SendErr(ctx, s, events.UnknownEventErr)
+			ws.SendErr(ctx, s, events.UnknownEventErr)
 			return
 		}
 
@@ -168,9 +166,9 @@ func (wt *WebsocketTransport) initEventHandler() error {
 	return nil
 }
 
-func (wt *WebsocketTransport) InitHandlers() error {
+func (ws *WebsocketAPI) InitHandlers() error {
 	return errors.Join(
-		wt.initConnectHandler(),
-		wt.initEventHandler(),
+		ws.initConnectHandler(),
+		ws.initEventHandler(),
 	)
 }

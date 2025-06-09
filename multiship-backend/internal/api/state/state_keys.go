@@ -1,5 +1,9 @@
 package state
 
-func SignupKey(sessionID string) string {
-	return "signedup:" + sessionID
+func SessionKey(sessionID string) string {
+	return "session:" + sessionID
+}
+
+func RoomKey(roomID string) string {
+	return "room:" + roomID
 }

@@ -18,7 +18,7 @@ func SignupHandler(
 	ctx context.Context,
 	event events.InboundEvent,
 ) error {
-	wt := utils.GetFromContextGeneric[*api.WebsocketTransport](
+	ws := utils.GetFromContextGeneric[*api.WebsocketAPI](
 		ctx, utils.WebsocketAPI,
 	)
 	s := utils.GetFromContextGeneric[*melody.Session](
@@ -41,8 +41,8 @@ func SignupHandler(
 	signupVal := utils.QuickMarshal(map[string]string{
 		"email": payload.Email,
 	})
-	db.Set(state.SignupKey(sessionID.(string)), signupVal)
-	wt.SendResponse(
+	db.Set(state.SessionKey(sessionID.(string)), signupVal)
+	ws.SendResponse(
 		ctx, events.SignedUp,
 		map[string]any{
 			"msg": "Signup successful",
