@@ -1,6 +1,11 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"math/rand"
+	"strings"
+
+	"github.com/google/uuid"
+)
 
 type RoomStatus string
 
@@ -51,11 +56,29 @@ type PlayerState struct {
 
 type RoomState struct {
 	RoomID          string                 `json:"roomId"`
+	Code            string                 `json:"code"`
 	LeaderSessionID string                 `json:"leaderSessionId"`
 	Status          RoomStatus             `json:"status"`
 	PlayerSessions  []string               `json:"playerSessions"`
 	CurrentPlayer   string                 `json:"currentPlayer"`
 	Players         map[string]PlayerState `json:"players"`
+}
+
+func createRoomCode() string {
+	return strings.Join([]string{
+		getWord(),
+		getWord(),
+		getWord(),
+	}, "-")
+}
+
+func getWord() string {
+	letters := []rune("abcdefghijklmnopqrstuvwxyz")
+	var b strings.Builder
+	for range 3 {
+		b.WriteRune(letters[rand.Intn(len(letters))])
+	}
+	return b.String()
 }
 
 func NewRoom(
@@ -65,9 +88,15 @@ func NewRoom(
 	roomID := newUUID.String()
 	return &RoomState{
 		RoomID:          roomID,
+		Code:            createRoomCode(),
 		LeaderSessionID: leaderSessionID,
 		Status:          Idle,
 		PlayerSessions:  []string{leaderSessionID},
 		CurrentPlayer:   "",
 	}
+}
+
+type RoomCreatedPayload struct {
+	RoomID   string `json:"roomId"`
+	RoomCode string `json:"roomCode"`
 }

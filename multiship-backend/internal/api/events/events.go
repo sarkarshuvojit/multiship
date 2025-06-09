@@ -3,11 +3,11 @@ package events
 import "encoding/json"
 
 type InboundEvent struct {
-	EventType InboundEventType `json:"event_type"`
+	EventType InboundEventType `json:"eventType"`
 	Payload   json.RawMessage  `json:"payload"`
 }
 
 type OutboundEvent struct {
-	EventType OutboundEventType `json:"event_type"`
+	EventType OutboundEventType `json:"eventType"`
 	Payload   any               `json:"payload"`
 }

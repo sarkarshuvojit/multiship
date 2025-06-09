@@ -44,16 +44,15 @@ func CreateRoomHandler(
 		return events.RoomCreationFailedErr
 	}
 
-	ws.SendResponse(
-		ctx, events.RoomCreated,
-		map[string]any{
-			"msg": "Room Created successful",
-			"payload": map[string]any{
-				"roomId":    room.RoomID,
-				"sessionId": sessionID,
-			},
+	res := &dto.ResponseDto[dto.RoomCreatedPayload]{
+		Msg: "Room created successfully",
+		Payload: dto.RoomCreatedPayload{
+			RoomID:   room.RoomID,
+			RoomCode: room.Code,
 		},
-	)
+	}
+
+	ws.SendResponse(ctx, events.RoomCreated, res)
 	return nil
 }
 
