@@ -42,11 +42,13 @@ func SignupHandler(
 		"email": payload.Email,
 	})
 	db.Set(state.SessionKey(sessionID.(string)), signupVal)
-	ws.SendResponse(
-		ctx, events.SignedUp,
-		map[string]any{
-			"msg": "Signup successful",
+
+	res := dto.ResponseDto[dto.SignupResDto]{
+		Msg: "Signup Successful",
+		Payload: dto.SignupResDto{
+			SessionID: sessionID.(string),
 		},
-	)
+	}
+	ws.SendResponse(ctx, events.SignedUp, res)
 	return nil
 }

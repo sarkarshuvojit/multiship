@@ -8,3 +8,7 @@ type ResponseDto[T any] struct {
 type SignupDto struct {
 	Email string `json:"email"`
 }
+
+type SignupResDto struct {
+	SessionID string `json:"sessionId"`
+}
