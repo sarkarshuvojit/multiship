@@ -44,19 +44,19 @@ func (r *RedisState) Set(key, value string) error {
 	return err
 }
 
-func (r *RedisState) Get(key string) (string, error) {
+func (r *RedisState) Get(key string) (string, bool) {
 	start := time.Now()
 	val, err := r.client.Get(r.ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		slog.Default().Warn("Redis GET - key not found", slog.String("key", key))
-		return "", nil
+		return "", false
 	}
 	slog.Default().Debug("Redis GET",
 		slog.String("key", key),
 		slog.Duration("took", time.Since(start)),
 		slog.Bool("success", err == nil),
 	)
-	return val, err
+	return val, true
 }
 
 func (r *RedisState) Delete(key string) error {

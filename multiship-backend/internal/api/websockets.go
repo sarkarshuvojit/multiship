@@ -16,12 +16,6 @@ import (
 type EventHandler = func(context.Context, events.InboundEvent) error
 
 // Errors
-var (
-	HandlerExistsErr = errors.New("Event handler already present")
-	DepExistsErr     = errors.New("Dependency already present")
-	ReqParsingErr    = errors.New("Request could not be parsed")
-	UnknownEvent     = errors.New("Unknown Event")
-)
 
 type WebsocketTransport struct {
 	m      *melody.Melody
@@ -46,7 +40,7 @@ func (wt *WebsocketTransport) AddDependency(
 	dep any,
 ) error {
 	if _, found := wt.deps[depKey]; found {
-		return DepExistsErr
+		return events.DepExistsErr
 	}
 
 	wt.deps[depKey] = dep
@@ -58,7 +52,7 @@ func (wt *WebsocketTransport) HandleEvent(
 	handler EventHandler,
 ) error {
 	if _, found := wt.routes[eventType]; found {
-		return HandlerExistsErr
+		return events.HandlerExistsErr
 	}
 
 	wt.routes[eventType] = handler
@@ -140,9 +134,10 @@ func (wt *WebsocketTransport) initConnectHandler() error {
 	wt.m.HandleConnect(func(s *melody.Session) {
 		ctx := wt.hydrateContext(context.Background(), s)
 		sessionID := createSessionID(s)
-		slog.Info("New buddy connected", "sessionID", sessionID)
+		slog.Info("New user connected", "sessionID", sessionID)
 		wt.SendResponse(ctx, events.Welcome, map[string]any{
-			"msg": "Welcome to our server, your sessionID is " + sessionID,
+			"msg":       "Welcome to our server",
+			"sessionId": sessionID,
 		})
 	})
 	return nil
@@ -152,7 +147,7 @@ func (wt *WebsocketTransport) initEventHandler() error {
 		ctx := context.Background()
 		var req events.InboundEvent
 		if err := json.Unmarshal(msg, &req); err != nil {
-			wt.SendErr(ctx, s, ReqParsingErr)
+			wt.SendErr(ctx, s, events.ReqParsingErr)
 			return
 		}
 
@@ -160,18 +155,12 @@ func (wt *WebsocketTransport) initEventHandler() error {
 		if routeFn, found := wt.routes[req.EventType]; found {
 			ctx = wt.hydrateContext(ctx, s)
 			if err := routeFn(ctx, req); err != nil {
-				wt.SendErr(
-					ctx, s,
-					errors.Join(
-						errors.New("Failed to invoke Event"),
-						err,
-					),
-				)
+				wt.SendErr(ctx, s, err)
 				return
 			}
 
 		} else {
-			wt.SendErr(ctx, s, UnknownEvent)
+			wt.SendErr(ctx, s, events.UnknownEventErr)
 			return
 		}
 

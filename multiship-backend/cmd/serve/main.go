@@ -24,6 +24,7 @@ func setupWebSockets() {
 
 	// Add event handlers
 	wt.HandleEvent(events.Signup, handlers.SignupHandler)
+	wt.HandleEvent(events.CreateRoom, handlers.CreateRoomHandler)
 }
 
 func main() {
