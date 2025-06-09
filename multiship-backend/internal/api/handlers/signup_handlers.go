@@ -7,19 +7,19 @@ import (
 	"log/slog"
 
 	"github.com/olahol/melody"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/dto"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/events"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/state"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/utils"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/dto"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 )
 
 func SignupHandler(
 	ctx context.Context,
 	event events.InboundEvent,
 ) error {
-	wt := utils.GetFromContextGeneric[*transport.WebsocketTransport](
-		ctx, utils.WebsocketTransport,
+	wt := utils.GetFromContextGeneric[*api.WebsocketTransport](
+		ctx, utils.WebsocketAPI,
 	)
 	s := utils.GetFromContextGeneric[*melody.Session](
 		ctx, utils.Session,

@@ -4,15 +4,15 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/events"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/handlers"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/state"
-	"github.com/sarkarshuvojit/multiship-backend/internal/transport/utils"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/handlers"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 )
 
 func setupWebSockets() {
-	wt := transport.NewWebsocketTransport()
+	wt := api.NewWebsocketTransport()
 	wt.InitHandlers()
 
 	// Add Dependencies

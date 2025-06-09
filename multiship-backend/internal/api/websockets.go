@@ -121,9 +121,9 @@ func (wt *WebsocketTransport) hydrateContext(
 ) context.Context {
 	// ctx provided by WT
 	ctxVariables := map[utils.ContextKey]any{
-		utils.WebsocketTransport: wt,
-		utils.Melody:             wt.m,
-		utils.Session:            s,
+		utils.WebsocketAPI: wt,
+		utils.Melody:       wt.m,
+		utils.Session:      s,
 	}
 	for k, v := range ctxVariables {
 		ctx = utils.SetToContext(ctx, k, v)
