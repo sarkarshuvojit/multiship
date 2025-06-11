@@ -12,3 +12,7 @@ type SignupDto struct {
 type SignupResDto struct {
 	SessionID string `json:"sessionId"`
 }
+
+type JoinRoomDto struct {
+	RoomCode string `json:"roomCode"`
+}

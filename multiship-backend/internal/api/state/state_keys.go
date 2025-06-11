@@ -7,3 +7,7 @@ func SessionKey(sessionID string) string {
 func RoomKey(roomID string) string {
 	return "room:" + roomID
 }
+
+func RoomCodeKey(roomCode string) string {
+	return "roomCode:" + roomCode
+}

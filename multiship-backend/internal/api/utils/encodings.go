@@ -9,3 +9,10 @@ func QuickMarshal(v any) string {
 	}
 	return string(s)
 }
+
+func QuickUnmarshal(content string, v any) {
+	err := json.Unmarshal([]byte(content), v)
+	if err != nil {
+		panic("This cannot be true")
+	}
+}

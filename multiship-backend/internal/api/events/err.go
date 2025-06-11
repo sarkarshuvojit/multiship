@@ -9,4 +9,8 @@ var (
 	UnknownEventErr       = errors.New("Unknown Event")
 	UnauthenticatedErr    = errors.New("Unauthenticated: Sign in first")
 	RoomCreationFailedErr = errors.New("Failed to create room")
+	RoomUpdationFailedErr = errors.New("Failed to create room")
+	RoomNotFound          = errors.New("Room not found")
+	RoomFull              = errors.New("Room already full")
+	RoomAlreadyJoined     = errors.New("Already in room")
 )
