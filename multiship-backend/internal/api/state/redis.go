@@ -9,6 +9,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const DEFAULT_EXPIRY = time.Minute * 30
+
 type RedisState struct {
 	client *redis.Client
 	ctx    context.Context
@@ -35,7 +37,7 @@ func NewRedisState(addr string, db int, password string) (*RedisState, error) {
 
 func (r *RedisState) Set(key, value string) error {
 	start := time.Now()
-	err := r.client.Set(r.ctx, key, value, 0).Err()
+	err := r.client.Set(r.ctx, key, value, DEFAULT_EXPIRY).Err()
 	slog.Default().Debug("Redis SET",
 		slog.String("key", key),
 		slog.Duration("took", time.Since(start)),

@@ -93,15 +93,15 @@ func JoinRoomHandler(
 		return err
 	}
 
-	if len(room.PlayerSessions) >= MAX_PLAYERS_PER_GAME {
-		return events.RoomFull
-	}
-
 	if slices.Contains(
 		room.PlayerSessions,
 		sessionID.(string),
 	) {
 		return events.RoomAlreadyJoined
+	}
+
+	if len(room.PlayerSessions) >= MAX_PLAYERS_PER_GAME {
+		return events.RoomFull
 	}
 
 	room.PlayerSessions = append(room.PlayerSessions, sessionID.(string))
