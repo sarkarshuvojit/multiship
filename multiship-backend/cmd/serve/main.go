@@ -12,7 +12,7 @@ import (
 )
 
 func setupWebSockets() {
-	wt := api.NewWebsocketTransport()
+	wt := api.NewWebsocketAPI()
 	wt.InitHandlers()
 
 	// Add Dependencies

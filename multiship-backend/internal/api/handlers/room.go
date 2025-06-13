@@ -56,6 +56,7 @@ func CreateRoomHandler(
 		},
 	}
 
+	slog.Info("Room created")
 	ws.SendResponse(ctx, events.RoomCreated, res)
 	return nil
 }
@@ -113,6 +114,7 @@ func JoinRoomHandler(
 		Msg:     "Room joined successfully",
 		Payload: map[string]string{},
 	}
+	slog.Info("Room joined")
 	ws.SendResponse(ctx, events.RoomJoined, res)
 	return nil
 }
