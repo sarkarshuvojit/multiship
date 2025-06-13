@@ -21,7 +21,7 @@ type WebsocketAPI struct {
 	deps   map[utils.ContextKey]any
 }
 
-func NewWebsocketTransport() *WebsocketAPI {
+func NewWebsocketAPI() *WebsocketAPI {
 	m := melody.New()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		m.HandleRequest(w, r)

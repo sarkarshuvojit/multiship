@@ -1,4 +1,4 @@
-package integration
+package e2e
 
 import (
 	"fmt"
@@ -11,7 +11,6 @@ import (
 
 func TestClientSignup(t *testing.T) {
 	url := "ws://localhost:5000/ws"
-
 	client, err := NewTestClient(url)
 	assert.NoError(t, err)
 	defer client.Close()

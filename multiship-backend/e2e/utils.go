@@ -1,9 +1,10 @@
-package integration
+package e2e
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -100,27 +101,27 @@ func (c *TestClient) Close() error {
 	return c.conn.Close()
 }
 
-func StartWebsocketServer() func() {
+func StartWebsocketServer() (func(), chan bool) {
 	ctx, cancel := context.WithCancel(
 		context.Background(),
 	)
+	ready := make(chan bool)
 	go func(context context.Context) {
-		wt := api.NewWebsocketTransport()
+		wt := api.NewWebsocketAPI()
 		wt.InitHandlers()
 
 		// Add Dependencies
-		db, err := state.NewRedisState("localhost:6379", 0, "localpass")
-		if err != nil {
-			panic("Cannot connect to redis")
-		}
+		db := state.NewInMemState()
 		wt.AddDependency(utils.Redis, db)
 
 		// Add event handlers
 		wt.HandleEvent(events.Signup, handlers.SignupHandler)
 		wt.HandleEvent(events.CreateRoom, handlers.CreateRoomHandler)
 		wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
-		http.ListenAndServe(":5000", nil)
+
+		ready <- true
+		slog.Error("Http Server Error", "err", http.ListenAndServe(":5000", nil))
 	}(ctx)
 
-	return cancel
+	return cancel, ready
 }
