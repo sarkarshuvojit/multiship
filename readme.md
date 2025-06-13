@@ -1,5 +1,7 @@
 # 3-Person Battleship Game
 
+[![Run tests](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml/badge.svg)](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml)
+
 This is a web-based Battleship game designed for three players. The UI features a player grid and a slider to view each opponent's grid.
 
 ## Features
