@@ -35,7 +35,7 @@ jobs:
       - name: Upload build output
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: multiship-ui/dist
 
   deploy:
     needs: build
