@@ -2,7 +2,7 @@ name: Build and Deploy Battleship UI
 
 on:
   push:
-    branches: [main]  # Trigger on pushes to main
+    branches: [ main ]
 
 permissions:
   pages: write
@@ -24,16 +24,16 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build project
         run: npm run build
 
-      - name: Prepare for Pages
-        uses: actions/configure-pages@v3
+      - name: Prepare GitHub Pages artifact
+        uses: actions/configure-pages@v5
 
-      - name: Upload build artifact
-        uses: actions/upload-pages-artifact@v1
+      - name: Upload build output
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
@@ -48,5 +48,4 @@ jobs:
 
     steps:
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
