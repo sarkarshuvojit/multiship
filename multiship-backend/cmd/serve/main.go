@@ -28,6 +28,7 @@ var (
 	REDIS_USERNAME = getEnvOrDefault("REDIS_USERNAME", "")
 	REDIS_PASSWORD = getEnvOrDefault("REDIS_PASSWORD", "localpass")
 	REDIS_USE_TLS  = getEnvOrDefault("REDIS_USE_TLS", "NO")
+	SERVER_PORT    = getEnvOrDefault("PORT", "5000")
 )
 
 func setupWebSockets() {
@@ -61,6 +62,6 @@ func main() {
 
 	setupWebSockets()
 
-	slog.Info("Listening on :5000")
-	http.ListenAndServe(":5000", nil)
+	slog.Info("Listening on :" + SERVER_PORT)
+	http.ListenAndServe(":"+SERVER_PORT, nil)
 }
