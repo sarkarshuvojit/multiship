@@ -62,6 +62,7 @@ export function BattleshipGrid(props: BattleshipGridProps) {
       {props.grid.flatMap((val, row, _arr) => {
         return val.flatMap((_val2, col, _arr2) => {
           return <Cell 
+            key={row + ":" + col}
             row={row} 
             col={col} 
             cellState={getRandomEnumValue(CellState)}
