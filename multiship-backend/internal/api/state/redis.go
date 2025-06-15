@@ -2,6 +2,7 @@ package state
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"log/slog"
 	"time"
@@ -16,16 +17,26 @@ type RedisState struct {
 	ctx    context.Context
 }
 
-func NewRedisState(addr string, db int, password string) (*RedisState, error) {
-	rdb := redis.NewClient(&redis.Options{
+func NewRedisState(
+	addr string, db int,
+	password string, username string,
+	useTLS bool,
+) (*RedisState, error) {
+	opts := &redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       db,
-	})
+		Username: username,
+	}
+	if useTLS {
+		opts.TLSConfig = &tls.Config{}
+	}
+	rdb := redis.NewClient(opts)
 
 	ctx := context.Background()
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		slog.Default().Error("Redis ping failed", slog.String("error", err.Error()))
+		slog.Default().Error("Tried to connect via", slog.Any("opts", opts))
 		return nil, err
 	}
 

@@ -1,3 +1,4 @@
 battleship-backend/tmp
 battleship-backend/.tmp
 multiship-backend/.tmp
+multiship-backend/.env
