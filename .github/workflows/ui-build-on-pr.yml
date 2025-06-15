@@ -1,7 +1,7 @@
 name: Build and Deploy Battleship UI
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
     paths:
       - 'multiship-ui/**'
@@ -31,23 +31,3 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Prepare GitHub Pages artifact
-        uses: actions/configure-pages@v5
-
-      - name: Upload build output
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: multiship-ui/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
