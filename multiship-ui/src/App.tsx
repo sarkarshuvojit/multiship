@@ -23,7 +23,7 @@ function App() {
 
   return (
     <>
-      <div className="bg-gray-100 flex items-center justify-center min-h-screen">
+      <div className="bg-gray-100 flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-black">
         <AuthScreen />
       </div>
     </>
