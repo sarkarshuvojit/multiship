@@ -1,4 +1,4 @@
-name: Build and Deploy Battleship UI
+name: Build to validate PR
 
 on:
   pull_request:
