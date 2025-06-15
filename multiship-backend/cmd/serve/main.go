@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/sarkarshuvojit/multiship-backend/internal/api"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
@@ -11,12 +12,34 @@ import (
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 )
 
+const (
+	DEFAULT_LOGICAL_REDIS_DB = 0
+)
+
+func getEnvOrDefault(key string, defaultValue string) string {
+	if val, found := os.LookupEnv(key); found {
+		return val
+	}
+	return defaultValue
+}
+
+var (
+	REDIS_URL      = getEnvOrDefault("REDIS_URL", "localhost:6379")
+	REDIS_USERNAME = getEnvOrDefault("REDIS_USERNAME", "")
+	REDIS_PASSWORD = getEnvOrDefault("REDIS_PASSWORD", "localpass")
+	REDIS_USE_TLS  = getEnvOrDefault("REDIS_USE_TLS", "NO")
+)
+
 func setupWebSockets() {
 	wt := api.NewWebsocketAPI()
 	wt.InitHandlers()
 
 	// Add Dependencies
-	db, err := state.NewRedisState("localhost:6379", 0, "localpass")
+	db, err := state.NewRedisState(
+		REDIS_URL, DEFAULT_LOGICAL_REDIS_DB,
+		REDIS_PASSWORD, REDIS_USERNAME,
+		REDIS_USE_TLS != "NO",
+	)
 	if err != nil {
 		panic("Cannot connect to redis")
 	}
