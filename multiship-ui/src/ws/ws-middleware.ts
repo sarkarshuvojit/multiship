@@ -7,7 +7,7 @@ export const wsMiddleware = (_store: MiddlewareAPI<Dispatch<UnknownAction>, any>
   (next: Dispatch<UnknownAction>) => 
     (action: UnknownAction) => {
       if (action.type === 'ws/send') {
-        const payloadAction = action as PayloadAction<InboundEvent>;
+        const payloadAction = action as PayloadAction<InboundEvent<any>>;
         wsClient.send(payloadAction.payload);
       }
 

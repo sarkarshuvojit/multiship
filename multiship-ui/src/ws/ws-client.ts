@@ -11,7 +11,7 @@ class WebSocketClient {
     };
   }
 
-  send(event: InboundEvent) {
+  send(event: InboundEvent<any>) {
     if (this.socket?.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(event));
     }
