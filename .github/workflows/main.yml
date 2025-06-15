@@ -9,7 +9,9 @@ on:
     paths:
       - 'multiship-backend/**'
   pull_request:
-    breanches: [ "main" ]
+    branches: [ "main" ]
+    paths:
+      - 'multiship-backend/**'
 
 jobs:
 
