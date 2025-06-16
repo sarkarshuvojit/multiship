@@ -14,6 +14,7 @@ export enum OutboundEventType {
   WELCOME = 'WELCOME',
   HIT_RESULT = 'HIT_RESULT',
   GAME_STARTED = 'GAME_STARTED',
+  LIVE_USERS_UPDATED = 'LIVE_USERS_UPDATED'
 }
 
 export interface InboundEvent<T extends any> {

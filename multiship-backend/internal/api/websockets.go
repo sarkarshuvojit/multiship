@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/olahol/melody"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/repo"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 )
 
@@ -100,6 +102,19 @@ func (ws WebsocketAPI) SendErr(
 	ws.m.BroadcastMultiple(respBytes, []*melody.Session{s})
 }
 
+func (ws WebsocketAPI) SendToAll(
+	ctx context.Context,
+	eventType events.OutboundEventType,
+	payload any,
+) {
+	r := events.OutboundEvent{
+		EventType: eventType,
+		Payload:   payload,
+	}
+	respBytes, _ := json.Marshal(r)
+	ws.m.Broadcast(respBytes)
+}
+
 func createSessionID(s *melody.Session) string {
 	newUUID, _ := uuid.NewUUID()
 	sessionID := newUUID.String()
@@ -137,9 +152,60 @@ func (ws *WebsocketAPI) initConnectHandler() error {
 			"msg":       "Welcome to our server",
 			"sessionId": sessionID,
 		})
+		db := utils.GetFromContextGeneric[state.State](
+			ctx, utils.Redis,
+		)
+		if err := repo.IncrementLiveUsers(db); err != nil {
+			slog.Error("Unable to increment live user count", "err", err)
+		}
+
+		newUserVal, err := repo.GetLiveUsers(db)
+		if err != nil {
+			slog.Error("Unable to get live user count", "err", err)
+			return
+		}
+
+		ws.SendToAll(
+			ctx, events.LiveUserUpdate,
+			map[string]any{
+				"liveUsers": newUserVal,
+			},
+		)
 	})
 	return nil
 }
+func (ws *WebsocketAPI) initDisconnectHandler() error {
+	ws.m.HandleDisconnect(func(s *melody.Session) {
+		ctx := ws.hydrateContext(context.Background(), s)
+		sessionID, found := s.Get("sessionID")
+		if !found {
+			return
+		}
+		slog.Debug("Known user disconnected", "sessionID", sessionID)
+		db := utils.GetFromContextGeneric[state.State](
+			ctx, utils.Redis,
+		)
+		if err := repo.DecrementLiveUsers(db); err != nil {
+			slog.Error("Unable to increment live user count", "err", err)
+			return
+		}
+
+		newUserVal, err := repo.GetLiveUsers(db)
+		if err != nil {
+			slog.Error("Unable to get live user count", "err", err)
+			return
+		}
+
+		ws.SendToAll(
+			ctx, events.LiveUserUpdate,
+			map[string]any{
+				"liveUsers": newUserVal,
+			},
+		)
+	})
+	return nil
+}
+
 func (ws *WebsocketAPI) initEventHandler() error {
 	ws.m.HandleMessage(func(s *melody.Session, msg []byte) {
 		ctx := context.Background()
@@ -168,6 +234,7 @@ func (ws *WebsocketAPI) initEventHandler() error {
 
 func (ws *WebsocketAPI) InitHandlers() error {
 	return errors.Join(
+		ws.initDisconnectHandler(),
 		ws.initConnectHandler(),
 		ws.initEventHandler(),
 	)

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAppSelector } from '@/app/hooks';
 
 export function RoomSelectionComponent(props: {
   selectedAvatar: string,
@@ -60,6 +61,10 @@ function SignupComponent(props: {
   setCurrentScreen: (newVal: any) => void
   setUsername: (newVal: any) => void
 }) {
+  const liveUsers = useAppSelector(state => {
+    console.log(state);
+    return state?.health?.liveUsers;
+  });
   const avatars = ['💀', '⚔️', '🔥', '👹', '🐺', '🦇', '🖤', '🗡️'];
 
   const getRandomAvatar = () => {
@@ -75,6 +80,7 @@ function SignupComponent(props: {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-gray-900 border border-red-800 rounded-lg shadow-2xl p-8 w-full max-w-md">
+          <span className="text-red-400">{liveUsers} users battling</span>
           <h1 className="text-3xl font-bold text-center text-red-400 mb-8 tracking-wider">
             ENTER THE BATTLE
           </h1>

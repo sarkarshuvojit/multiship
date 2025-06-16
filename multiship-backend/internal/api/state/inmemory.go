@@ -2,6 +2,7 @@ package state
 
 import (
 	"errors"
+	"strconv"
 	"sync"
 )
 
@@ -46,3 +47,49 @@ func (s *InMemState) Delete(key string) error {
 	delete(s.data, key)
 	return nil
 }
+
+// Incr increments the integer value stored at key by 1.
+// If the key does not exist, it is initialized to 1.
+func (s *InMemState) Incr(key string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	valStr, exists := s.data[key]
+	if !exists {
+		s.data[key] = "1"
+		return nil
+	}
+
+	valInt, err := strconv.Atoi(valStr)
+	if err != nil {
+		return errors.New("value is not an integer")
+	}
+
+	valInt++
+	s.data[key] = strconv.Itoa(valInt)
+	return nil
+}
+
+// Decr decrements the integer value stored at key by 1.
+// If the key does not exist, it is initialized to -1.
+func (s *InMemState) Decr(key string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	valStr, exists := s.data[key]
+	if !exists {
+		s.data[key] = "-1"
+		return nil
+	}
+
+	valInt, err := strconv.Atoi(valStr)
+	if err != nil {
+		return errors.New("value is not an integer")
+	}
+
+	valInt--
+	s.data[key] = strconv.Itoa(valInt)
+	return nil
+}
+
+var _ State = (*InMemState)(nil)

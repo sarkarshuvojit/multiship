@@ -97,4 +97,58 @@ func (r *RedisState) Has(key string) (bool, error) {
 	return found, err
 }
 
+func (r *RedisState) Incr(key string) error {
+	start := time.Now()
+
+	// Try to set the key to "0" only if it doesn't exist
+	_, err := r.client.SetNX(r.ctx, key, 0, 0).Result()
+	if err != nil {
+		slog.Default().Error("Redis SETNX failed",
+			slog.String("key", key),
+			slog.Duration("took", time.Since(start)),
+			slog.Bool("success", false),
+			slog.String("error", err.Error()),
+		)
+		return err
+	}
+
+	// Now safely increment
+	val, err := r.client.Incr(r.ctx, key).Result()
+	slog.Default().Debug("Redis INCR",
+		slog.String("key", key),
+		slog.Int64("new_value", val),
+		slog.Duration("took", time.Since(start)),
+		slog.Bool("success", err == nil),
+	)
+	return err
+}
+
+// Decr decrements the value of the given key by 1 in Redis,
+// initializing it to 0 if it doesn't exist.
+func (r *RedisState) Decr(key string) error {
+	start := time.Now()
+
+	// Try to set the key to "0" only if it doesn't exist
+	_, err := r.client.SetNX(r.ctx, key, 0, 0).Result()
+	if err != nil {
+		slog.Default().Error("Redis SETNX failed",
+			slog.String("key", key),
+			slog.Duration("took", time.Since(start)),
+			slog.Bool("success", false),
+			slog.String("error", err.Error()),
+		)
+		return err
+	}
+
+	// Now safely decrement
+	val, err := r.client.Decr(r.ctx, key).Result()
+	slog.Default().Debug("Redis DECR",
+		slog.String("key", key),
+		slog.Int64("new_value", val),
+		slog.Duration("took", time.Since(start)),
+		slog.Bool("success", err == nil),
+	)
+	return err
+}
+
 var _ State = (*RedisState)(nil)
