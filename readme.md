@@ -2,8 +2,6 @@
 
 [![Run tests](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml/badge.svg)](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml)
 
-[![Build and Deploy Battleship UI](https://github.com/sarkarshuvojit/multiship/actions/workflows/ui-build-and-deploy.yml/badge.svg)](https://github.com/sarkarshuvojit/multiship/actions/workflows/ui-build-and-deploy.yml)
-
 This is a web-based Battleship game designed for multiple players. The UI features a player grid and a slider to view each opponent's grid.
 
 ## Features
