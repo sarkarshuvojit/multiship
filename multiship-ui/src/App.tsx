@@ -4,7 +4,6 @@ import { SIGNUP } from './ws/actions';
 import { InboundEventType } from './types/wsevents';
 import { useEffect, useRef } from 'react';
 import AuthScreen from './components/auth.screen';
-import { useAppSelector } from './app/hooks';
 
 function App() {
   const dispatch = useDispatch();
