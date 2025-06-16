@@ -30,4 +30,6 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          VITE_API_URL: wss://multiship.onrender.com/ws
 

@@ -30,6 +30,8 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          VITE_API_URL: wss://multiship.onrender.com/ws
 
       - name: Prepare GitHub Pages artifact
         uses: actions/configure-pages@v5

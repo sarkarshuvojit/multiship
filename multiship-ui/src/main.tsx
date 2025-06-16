@@ -6,7 +6,7 @@ import { initWebSocket } from './ws/ws-middleware.ts';
 import { store } from './app/store.ts';
 import { Provider } from 'react-redux';
 
-initWebSocket('ws://localhost:5000/ws', store);
+initWebSocket(import.meta.env.VITE_API_URL ?? 'ws://localhost:5000/ws', store);
 
 
 createRoot(document.getElementById('root')!).render(
