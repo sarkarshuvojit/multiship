@@ -5,4 +5,7 @@ type State interface {
 	Get(string) (string, bool)
 	Has(string) (bool, error)
 	Delete(string) error
+
+	Incr(string) error
+	Decr(string) error
 }
