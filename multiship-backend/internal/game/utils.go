@@ -22,6 +22,28 @@ func getWord() string {
 	return b.String()
 }
 
+// validateBoard validates whether a ship configuration can be placed on the board without any conflicts
+// Conflicts may include
+// - Incorrect amount of ships of specific lengths
+// - Position overlaps
+// - Position exceeding bounds
+// - Position right next to another ship
+//
+// Required Ships
+// 1 ship of length  4 (Battleship)
+// 2 ships of length 3 (Cruisers)
+// 3 ships of length 2 (Destroyers)
+// 4 ships of length 1 (Submarines)
+func validateBoard(ships []ShipState) bool {
+	if !validatePieceFrequency(ships) {
+		return false
+	}
+	if !validateBoundaries(ships) {
+		return false
+	}
+	return true
+}
+
 func validatePieceFrequency(ships []ShipState) bool {
 	if len(ships) != 10 {
 		return false
@@ -48,21 +70,18 @@ func validatePieceFrequency(ships []ShipState) bool {
 	return true
 }
 
-// validateBoard validates whether a ship configuration can be placed on the board without any conflicts
-// Conflicts may include
-// - Incorrect amount of ships of specific lengths
-// - Position overlaps
-// - Position exceeding bounds
-// - Position right next to another ship
-//
-// Required Ships
-// 1 ship of length  4 (Battleship)
-// 2 ships of length 3 (Cruisers)
-// 3 ships of length 2 (Destroyers)
-// 4 ships of length 1 (Submarines)
-func validateBoard(ships []ShipState) bool {
-	if !validatePieceFrequency(ships) {
-		return false
+func validateBoundaries(ships []ShipState) bool {
+	for _, ship := range ships {
+		var target int
+		if ship.Dir == Horizontal {
+			target = ship.X
+		} else {
+			target = ship.Y
+		}
+
+		if target+ship.Len > 9 {
+			return false
+		}
 	}
 	return true
 }
