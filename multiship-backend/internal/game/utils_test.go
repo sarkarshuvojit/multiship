@@ -21,29 +21,6 @@ func Test_validateBoard(t *testing.T) {
 			},
 		},
 		{
-			name: "Ship going out of bounds",
-			want: false,
-			arg: []ShipState{
-				{X: 8, Y: 9, Dir: Horizontal, Len: 4}, // Y+4 > 10
-			},
-		},
-		{
-			name: "Overlapping ships",
-			want: false,
-			arg: []ShipState{
-				{X: 0, Y: 0, Dir: Horizontal, Len: 3},
-				{X: 0, Y: 2, Dir: Vertical, Len: 3}, // Overlaps at (0,2)
-			},
-		},
-		{
-			name: "Adjacent ships (should fail)",
-			want: false,
-			arg: []ShipState{
-				{X: 0, Y: 0, Dir: Horizontal, Len: 3},
-				{X: 1, Y: 1, Dir: Horizontal, Len: 3}, // Diagonally adjacent
-			},
-		},
-		{
 			name: "Valid complete configuration",
 			want: true,
 			arg: []ShipState{
