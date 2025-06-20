@@ -154,17 +154,21 @@ export default function AuthScreen() {
   };
 
   if (currentScreen === 'username') {
-    return <SignupComponent 
-      username={username} 
-      selectedAvatar={selectedAvatar} 
-      setSelectedAvatar={setSelectedAvatar} 
-      setCurrentScreen={setCurrentScreen} 
-      setUsername={setUsername} />
+    return <div className="bg-gray-100 flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-black">
+      <SignupComponent 
+        username={username} 
+        selectedAvatar={selectedAvatar} 
+        setSelectedAvatar={setSelectedAvatar} 
+        setCurrentScreen={setCurrentScreen} 
+        setUsername={setUsername} />
+      </div>
   }
 
-  return <RoomSelectionComponent 
-    selectedAvatar={selectedAvatar} 
-    username={username} 
-    handleBack={handleBack} />
+  return <div className="bg-gray-100 flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-black">
+      <RoomSelectionComponent 
+        selectedAvatar={selectedAvatar} 
+        username={username} 
+        handleBack={handleBack} />
+  </div>
 
 }
