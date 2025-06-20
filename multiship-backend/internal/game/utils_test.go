@@ -57,6 +57,46 @@ func Test_validateBoard(t *testing.T) {
 				{X: 8, Y: 6, Dir: Horizontal, Len: 1},
 			},
 		},
+		{
+			name: "Overlap between ships",
+			want: false,
+			arg: []ShipState{
+				// 1x Length 4
+				{X: 1, Y: 1, Dir: Horizontal, Len: 4},
+				// 2x Length 3
+				{X: 1, Y: 1, Dir: Vertical, Len: 3},
+				{X: 4, Y: 1, Dir: Vertical, Len: 3},
+				// 3x Length 2
+				{X: 7, Y: 2, Dir: Vertical, Len: 2},
+				{X: 4, Y: 5, Dir: Vertical, Len: 2},
+				{X: 9, Y: 5, Dir: Vertical, Len: 2},
+				// 4x Length 1
+				{X: 6, Y: 6, Dir: Vertical, Len: 1},
+				{X: 1, Y: 5, Dir: Vertical, Len: 1},
+				{X: 1, Y: 7, Dir: Vertical, Len: 1},
+				{X: 4, Y: 8, Dir: Vertical, Len: 1},
+			},
+		},
+		{
+			name: "Out of bounds Horizontally",
+			want: false,
+			arg: []ShipState{
+				// 1x Length 4
+				{X: 7, Y: 1, Dir: Horizontal, Len: 4},
+				// 2x Length 3
+				{X: 4, Y: 1, Dir: Vertical, Len: 3},
+				{X: 1, Y: 1, Dir: Vertical, Len: 3},
+				// 3x Length 2
+				{X: 6, Y: 3, Dir: Vertical, Len: 2},
+				{X: 6, Y: 6, Dir: Vertical, Len: 2},
+				{X: 9, Y: 6, Dir: Vertical, Len: 2},
+				// 4x Length 1
+				{X: 3, Y: 3, Dir: Vertical, Len: 1},
+				{X: 7, Y: 2, Dir: Vertical, Len: 1},
+				{X: 4, Y: 8, Dir: Vertical, Len: 1},
+				{X: 2, Y: 8, Dir: Vertical, Len: 1},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
