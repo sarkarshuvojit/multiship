@@ -22,7 +22,7 @@ func getWord() string {
 	return b.String()
 }
 
-// validateBoard validates whether a ship configuration can be placed on the board without any conflicts
+// ValidateBoard validates whether a ship configuration can be placed on the board without any conflicts
 // Conflicts may include
 // - Incorrect amount of ships of specific lengths
 // - Position overlaps
@@ -34,7 +34,7 @@ func getWord() string {
 // 2 ships of length 3 (Cruisers)
 // 3 ships of length 2 (Destroyers)
 // 4 ships of length 1 (Submarines)
-func validateBoard(ships []ShipState) bool {
+func ValidateBoard(ships []ShipState) bool {
 	validators := []func([]ShipState) bool{
 		validatePieceFrequency,
 		validateBoundaries,

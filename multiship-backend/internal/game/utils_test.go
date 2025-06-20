@@ -100,7 +100,7 @@ func Test_validateBoard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := validateBoard(tt.arg)
+			got := ValidateBoard(tt.arg)
 			if tt.want != got {
 				t.Errorf("validateBoard() = %v, want %v", got, tt.want)
 			}

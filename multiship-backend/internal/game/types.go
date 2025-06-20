@@ -46,3 +46,12 @@ type PlayerState struct {
 	Board     [][]CellState `json:"board"`
 	Ships     []ShipState   `json:"ships"`
 }
+
+func NewPlayer(sessionID string) *PlayerState {
+	return &PlayerState{
+		SessionID: sessionID,
+		Status:    Joined,
+		Board:     [][]CellState{},
+		Ships:     []ShipState{},
+	}
+}
