@@ -27,17 +27,17 @@ func Test_validateBoard(t *testing.T) {
 				// 1x Length 4
 				{X: 0, Y: 0, Dir: Horizontal, Len: 4},
 				// 2x Length 3
-				{X: 2, Y: 0, Dir: Horizontal, Len: 3},
-				{X: 4, Y: 0, Dir: Horizontal, Len: 3},
+				{X: 0, Y: 2, Dir: Horizontal, Len: 3},
+				{X: 0, Y: 4, Dir: Horizontal, Len: 3},
 				// 3x Length 2
-				{X: 6, Y: 0, Dir: Horizontal, Len: 2},
-				{X: 6, Y: 3, Dir: Horizontal, Len: 2},
+				{X: 0, Y: 6, Dir: Horizontal, Len: 2},
+				{X: 3, Y: 6, Dir: Horizontal, Len: 2},
 				{X: 6, Y: 6, Dir: Horizontal, Len: 2},
 				// 4x Length 1
-				{X: 8, Y: 0, Dir: Horizontal, Len: 1},
-				{X: 8, Y: 2, Dir: Horizontal, Len: 1},
-				{X: 8, Y: 4, Dir: Horizontal, Len: 1},
-				{X: 8, Y: 6, Dir: Horizontal, Len: 1},
+				{X: 0, Y: 8, Dir: Horizontal, Len: 1},
+				{X: 2, Y: 8, Dir: Horizontal, Len: 1},
+				{X: 4, Y: 8, Dir: Horizontal, Len: 1},
+				{X: 6, Y: 8, Dir: Horizontal, Len: 1},
 			},
 		},
 		{

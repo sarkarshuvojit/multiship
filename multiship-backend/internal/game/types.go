@@ -22,7 +22,7 @@ type ShipDirection string
 
 const (
 	Horizontal ShipDirection = "HORIZONTAL"
-	Vertical                 = "Vertical"
+	Vertical                 = "VERTICAL"
 )
 
 type ShipState struct {

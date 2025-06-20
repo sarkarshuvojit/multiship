@@ -35,11 +35,39 @@ func getWord() string {
 // 3 ships of length 2 (Destroyers)
 // 4 ships of length 1 (Submarines)
 func validateBoard(ships []ShipState) bool {
-	if !validatePieceFrequency(ships) {
-		return false
+	validators := []func([]ShipState) bool{
+		validatePieceFrequency,
+		validateBoundaries,
+		validateOverlaps,
 	}
-	if !validateBoundaries(ships) {
-		return false
+	for _, validateFn := range validators {
+		if !validateFn(ships) {
+			return false
+		}
+	}
+	return true
+}
+
+func validateOverlaps(ships []ShipState) bool {
+	grid := [10][10]bool{}
+	for _, ship := range ships {
+		if ship.Dir == Horizontal {
+			for i := range ship.Len {
+				if grid[ship.X+i][ship.Y] {
+					// overlap detected
+					return false
+				}
+				grid[ship.X+i][ship.Y] = true
+			}
+		} else {
+			for i := range ship.Len {
+				if grid[ship.X][ship.Y+i] {
+					// overlap detected
+					return false
+				}
+				grid[ship.X][ship.Y+i] = true
+			}
+		}
 	}
 	return true
 }
