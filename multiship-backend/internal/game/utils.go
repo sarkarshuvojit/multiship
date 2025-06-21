@@ -107,11 +107,15 @@ func validatePieceFrequency(ships []ShipState) bool {
 func validateBoundaries(ships []ShipState) bool {
 	for _, ship := range ships {
 		var target int
-		if ship.Dir == Horizontal {
+
+		switch ship.Dir {
+		case Horizontal:
 			target = ship.X
-		} else if ship.Dir == Vertical {
+			break
+		case Vertical:
 			target = ship.Y
-		} else {
+			break
+		default:
 			return false
 		}
 
