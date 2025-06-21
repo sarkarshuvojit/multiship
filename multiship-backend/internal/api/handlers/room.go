@@ -170,7 +170,8 @@ func SubmitBoardHandler(
 	player.Status = game.BoardReady
 	room.Players[sessionID.(string)] = player
 
-	// TODO: check if all players have submitted or not
+	// TODO: check if all players have submitted or not; if yes update game state
+	// Possibly create an async job queue
 
 	if err := repo.UpdateRoom(db, room); err != nil {
 		return err

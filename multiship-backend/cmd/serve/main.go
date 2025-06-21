@@ -50,7 +50,7 @@ func setupWebSockets() {
 	wt.HandleEvent(events.Signup, handlers.SignupHandler)
 	wt.HandleEvent(events.CreateRoom, handlers.CreateRoomHandler)
 	wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
-	wt.HandleEvent(events.SubmitBoard, handlers.JoinRoomHandler)
+	wt.HandleEvent(events.SubmitBoard, handlers.SubmitBoardHandler)
 }
 
 func main() {

@@ -28,8 +28,8 @@ const (
 type ShipState struct {
 	X   int           `json:"x"`
 	Y   int           `json:"y"`
-	Dir ShipDirection `json:"dir"`
-	Len int           `json:"len"`
+	Dir ShipDirection `json:"direction"`
+	Len int           `json:"length"`
 }
 
 type PlayerStatus string

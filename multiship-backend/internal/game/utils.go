@@ -2,6 +2,8 @@ package game
 
 import (
 	"math/rand"
+	"reflect"
+	"runtime"
 	"strings"
 )
 
@@ -20,6 +22,10 @@ func getWord() string {
 		b.WriteRune(letters[rand.Intn(len(letters))])
 	}
 	return b.String()
+}
+
+func getFuncName(i any) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
 // ValidateBoard validates whether a ship configuration can be placed on the board without any conflicts
@@ -103,11 +109,13 @@ func validateBoundaries(ships []ShipState) bool {
 		var target int
 		if ship.Dir == Horizontal {
 			target = ship.X
-		} else {
+		} else if ship.Dir == Vertical {
 			target = ship.Y
+		} else {
+			return false
 		}
 
-		if target+ship.Len > 9 {
+		if target+ship.Len-1 > 9 {
 			return false
 		}
 	}
