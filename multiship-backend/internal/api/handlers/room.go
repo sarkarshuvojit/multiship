@@ -112,8 +112,10 @@ func JoinRoomHandler(
 	}
 
 	res := &dto.ResponseDto[any]{
-		Msg:     "Room joined successfully",
-		Payload: map[string]string{},
+		Msg: "Room joined successfully",
+		Payload: map[string]string{
+			"roomId": room.RoomID,
+		},
 	}
 	slog.Info("Room joined")
 	ws.SendResponse(ctx, events.RoomJoined, res)
