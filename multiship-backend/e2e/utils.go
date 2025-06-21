@@ -118,6 +118,7 @@ func StartWebsocketServer() (func(), chan bool) {
 		wt.HandleEvent(events.Signup, handlers.SignupHandler)
 		wt.HandleEvent(events.CreateRoom, handlers.CreateRoomHandler)
 		wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
+		wt.HandleEvent(events.SubmitBoard, handlers.SubmitBoardHandler)
 
 		ready <- true
 		slog.Error("Http Server Error", "err", http.ListenAndServe(":5000", nil))
