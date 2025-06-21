@@ -25,6 +25,8 @@ type WebsocketAPI struct {
 
 func NewWebsocketAPI() *WebsocketAPI {
 	m := melody.New()
+	// FIXME: Perform a back on envelope calculatation and add a justified value here
+	m.Config.MaxMessageSize = 2048
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		m.HandleRequest(w, r)
 	})

@@ -32,8 +32,7 @@ func CreateRoom(
 	return room, nil
 }
 
-func GetRoomByRoomCode(
-	db state.State,
+func GetRoomByRoomCode(db state.State,
 	roomCode string,
 ) (*game.RoomState, error) {
 
@@ -41,15 +40,7 @@ func GetRoomByRoomCode(
 	if !found {
 		return nil, events.RoomNotFound
 	}
-	content, found := db.Get(state.RoomKey(roomID))
-	if !found {
-		return nil, events.RoomNotFound
-	}
-
-	var room game.RoomState
-	utils.QuickUnmarshal(content, &room)
-
-	return &room, nil
+	return GetRoomByID(db, roomID)
 }
 
 func UpdateRoom(
@@ -65,4 +56,20 @@ func UpdateRoom(
 	}
 
 	return nil
+}
+
+func GetRoomByID(
+	db state.State,
+	roomID string,
+) (*game.RoomState, error) {
+
+	content, found := db.Get(state.RoomKey(roomID))
+	if !found {
+		return nil, events.RoomNotFound
+	}
+
+	var room game.RoomState
+	utils.QuickUnmarshal(content, &room)
+
+	return &room, nil
 }

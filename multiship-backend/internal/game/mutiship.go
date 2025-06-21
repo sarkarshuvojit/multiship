@@ -25,6 +25,9 @@ func NewRoom(
 		LeaderSessionID: leaderSessionID,
 		Status:          Idle,
 		PlayerSessions:  []string{leaderSessionID},
-		CurrentPlayer:   "",
+		Players: map[string]PlayerState{
+			leaderSessionID: *NewPlayer(leaderSessionID),
+		},
+		CurrentPlayer: "",
 	}
 }

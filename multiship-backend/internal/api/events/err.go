@@ -12,5 +12,7 @@ var (
 	RoomUpdationFailedErr = errors.New("Failed to create room")
 	RoomNotFound          = errors.New("Room not found")
 	RoomFull              = errors.New("Room already full")
-	RoomAlreadyJoined     = errors.New("Already in room")
+	RoomAlreadyJoinedErr  = errors.New("Already in room")
+	NotInRoomErr          = errors.New("User not in current room")
+	InvalidShipConfigErr  = errors.New("Ship configuration invalid")
 )
