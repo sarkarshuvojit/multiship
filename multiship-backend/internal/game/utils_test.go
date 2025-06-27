@@ -97,10 +97,30 @@ func Test_validateBoard(t *testing.T) {
 				{X: 2, Y: 8, Dir: Vertical, Len: 1},
 			},
 		},
+		{
+			name: "Not out of bounds - All items placed in borders",
+			want: true,
+			arg: []ShipState{
+				// 1x Length 4
+				{X: 0, Y: 0, Dir: Horizontal, Len: 4},
+				// 2x Length 3
+				{X: 9, Y: 0, Dir: Vertical, Len: 3},
+				{X: 9, Y: 7, Dir: Vertical, Len: 3},
+				// 3x Length 2
+				{X: 0, Y: 8, Dir: Vertical, Len: 2},
+				{X: 0, Y: 5, Dir: Vertical, Len: 2},
+				{X: 0, Y: 2, Dir: Vertical, Len: 2},
+				// 4x Length 1
+				{X: 5, Y: 0, Dir: Vertical, Len: 1},
+				{X: 7, Y: 0, Dir: Vertical, Len: 1},
+				{X: 2, Y: 9, Dir: Vertical, Len: 1},
+				{X: 4, Y: 9, Dir: Vertical, Len: 1},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := validateBoard(tt.arg)
+			got := ValidateBoard(tt.arg)
 			if tt.want != got {
 				t.Errorf("validateBoard() = %v, want %v", got, tt.want)
 			}

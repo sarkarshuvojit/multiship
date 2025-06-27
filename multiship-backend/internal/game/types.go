@@ -28,8 +28,8 @@ const (
 type ShipState struct {
 	X   int           `json:"x"`
 	Y   int           `json:"y"`
-	Dir ShipDirection `json:"dir"`
-	Len int           `json:"len"`
+	Dir ShipDirection `json:"direction"`
+	Len int           `json:"length"`
 }
 
 type PlayerStatus string
@@ -45,4 +45,13 @@ type PlayerState struct {
 	Status    PlayerStatus  `json:"status"`
 	Board     [][]CellState `json:"board"`
 	Ships     []ShipState   `json:"ships"`
+}
+
+func NewPlayer(sessionID string) *PlayerState {
+	return &PlayerState{
+		SessionID: sessionID,
+		Status:    Joined,
+		Board:     [][]CellState{},
+		Ships:     []ShipState{},
+	}
 }

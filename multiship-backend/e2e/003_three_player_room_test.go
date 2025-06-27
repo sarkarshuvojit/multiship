@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,24 +32,8 @@ func TestMultiClientRoomInteraction(t *testing.T) {
 
 	// Test c1: SIGNUP and CREATE_ROOM
 	t.Run("Client1_SignupAndCreateRoom", func(t *testing.T) {
-		// Send SIGNUP message
-		err := c1.SendMessage(events.Signup, map[string]any{
-			"email": email1,
-		})
-		assert.NoError(t, err)
-
-		// Wait for SIGNED_UP response
-		msg, err := c1.WaitForMessage(events.SignedUp, 5*time.Second)
-		assert.NoError(t, err)
-		assert.Equal(t, events.SignedUp, msg.EventType)
-
-		// Send CREATE_ROOM message
-		err = c1.SendMessage(events.CreateRoom, nil)
-		assert.NoError(t, err)
-
-		// Wait for ROOM_CREATED response and capture roomCode
-		msg, err = c1.WaitForMessage(events.RoomCreated, 5*time.Second)
-		assert.NoError(t, err)
+		AssertSignup(t, c1, email1)
+		msg := AssertCreateRoom(t, c1)
 
 		data := msg.Payload.(map[string]any)
 		roomCode = data["payload"].(map[string]any)["roomCode"].(string)
@@ -58,50 +41,13 @@ func TestMultiClientRoomInteraction(t *testing.T) {
 		assert.NotEmpty(t, roomCode)
 	})
 
-	// Test c2: SIGNUP and JOIN_ROOM
 	t.Run("Client2_SignupAndJoinRoom", func(t *testing.T) {
-		// Send SIGNUP message
-		err := c2.SendMessage(events.Signup, map[string]any{
-			"email": email2,
-		})
-		assert.NoError(t, err)
-
-		// Wait for SIGNED_UP response
-		_, signuperr := c2.WaitForMessage(events.SignedUp, 5*time.Second)
-		assert.NoError(t, signuperr)
-
-		// Send JOIN_ROOM message with captured roomCode
-		err = c2.SendMessage(events.JoinRoom, map[string]any{
-			"roomCode": roomCode,
-		})
-		assert.NoError(t, err)
-
-		// Wait for ROOM_JOINED response
-		_, err = c2.WaitForMessage(events.RoomJoined, 5*time.Second)
-		assert.NoError(t, err)
+		AssertSignup(t, c2, email2)
+		AssertJoinRoom(t, c2, roomCode)
 	})
 
-	// Test c3: SIGNUP and JOIN_ROOM
 	t.Run("Client3_SignupAndJoinRoom", func(t *testing.T) {
-		// Send SIGNUP message
-		err := c3.SendMessage(events.Signup, map[string]any{
-			"email": email3,
-		})
-		assert.NoError(t, err)
-
-		// Wait for SIGNED_UP response
-		_, signuperr := c3.WaitForMessage(events.SignedUp, 5*time.Second)
-		assert.NoError(t, signuperr)
-
-		// Send JOIN_ROOM message with captured roomCode
-		err = c3.SendMessage(events.JoinRoom, map[string]any{
-			"roomCode": roomCode,
-		})
-		assert.NoError(t, err)
-
-		// Wait for ROOM_JOINED response
-		_, err = c3.WaitForMessage(events.RoomJoined, 5*time.Second)
-		assert.NoError(t, err)
+		AssertSignup(t, c3, email3)
+		AssertJoinRoom(t, c3, roomCode)
 	})
-
 }
