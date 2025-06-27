@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -15,6 +16,15 @@ import (
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 )
+
+func GetEnvOrDefault(key string, defaultValue string) string {
+	if val, found := os.LookupEnv(key); found {
+		return val
+	}
+	return defaultValue
+}
+
+var TestServerPort string = GetEnvOrDefault("PORT", "5555")
 
 type TestClient struct {
 	conn     *websocket.Conn
@@ -120,7 +130,7 @@ func StartWebsocketServer() (func(), chan bool) {
 		wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
 
 		ready <- true
-		slog.Error("Http Server Error", "err", http.ListenAndServe(":5000", nil))
+		slog.Error("Http Server Error", "err", http.ListenAndServe(":"+TestServerPort, nil))
 	}(ctx)
 
 	return cancel, ready

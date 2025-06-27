@@ -10,7 +10,7 @@ import (
 )
 
 func TestMultiClientRoomInteraction(t *testing.T) {
-	url := "ws://localhost:5000/ws"
+	url := fmt.Sprintf("ws://localhost:%s/ws", TestServerPort)
 	// Create three WebSocket connections
 	c1, err := NewTestClient(url)
 	assert.NoError(t, err)

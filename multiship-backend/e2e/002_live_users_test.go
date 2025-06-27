@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func TestLiveUsers(t *testing.T) {
-	url := "ws://localhost:5000/ws"
+	url := fmt.Sprintf("ws://localhost:%s/ws", TestServerPort)
 
 	c1, err := NewTestClient(url)
 	assert.NoError(t, err)

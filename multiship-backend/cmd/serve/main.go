@@ -63,5 +63,7 @@ func main() {
 	setupWebSockets()
 
 	slog.Info("Listening on :" + SERVER_PORT)
-	http.ListenAndServe(":"+SERVER_PORT, nil)
+	if err := http.ListenAndServe(":"+SERVER_PORT, nil); err != nil {
+		slog.Error("Failed to start HttpServer", "err", err)
+	}
 }

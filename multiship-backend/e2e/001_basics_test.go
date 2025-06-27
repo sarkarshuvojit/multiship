@@ -10,7 +10,7 @@ import (
 )
 
 func TestClientSignup(t *testing.T) {
-	url := "ws://localhost:5000/ws"
+	url := fmt.Sprintf("ws://localhost:%s/ws", TestServerPort)
 	client, err := NewTestClient(url)
 	assert.NoError(t, err)
 	defer client.Close()
@@ -29,7 +29,7 @@ func TestClientSignup(t *testing.T) {
 }
 
 func TestRoomCreation(t *testing.T) {
-	url := "ws://localhost:5000/ws"
+	url := fmt.Sprintf("ws://localhost:%s/ws", TestServerPort)
 
 	client, err := NewTestClient(url)
 	assert.NoError(t, err)
