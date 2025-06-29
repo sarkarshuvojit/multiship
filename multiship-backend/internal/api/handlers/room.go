@@ -11,6 +11,7 @@ import (
 	"github.com/sarkarshuvojit/multiship-backend/internal/api"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/dto"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/jobs"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/repo"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
@@ -116,6 +117,12 @@ func JoinRoomHandler(
 	}
 	slog.Info("Room joined")
 	ws.SendResponse(ctx, events.RoomJoined, res)
+
+	// Ignore error channel
+	_ = jobs.DispatchJob(ctx, events.JobEvent{
+		EventType: events.RecomputeRoomState,
+		Payload:   map[string]string{},
+	})
 	return nil
 }
 

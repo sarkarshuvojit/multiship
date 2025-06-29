@@ -13,4 +13,6 @@ var (
 	RoomNotFound          = errors.New("Room not found")
 	RoomFull              = errors.New("Room already full")
 	RoomAlreadyJoined     = errors.New("Already in room")
+
+	UnknownJobErr = errors.New("Unknown Job")
 )
