@@ -15,4 +15,7 @@ var (
 	RoomAlreadyJoined     = errors.New("Already in room")
 
 	UnknownJobErr = errors.New("Unknown Job")
+	RoomAlreadyJoinedErr  = errors.New("Already in room")
+	NotInRoomErr          = errors.New("User not in current room")
+	InvalidShipConfigErr  = errors.New("Ship configuration invalid")
 )

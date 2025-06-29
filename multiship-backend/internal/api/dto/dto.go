@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/sarkarshuvojit/multiship-backend/internal/game"
+
 type ResponseDto[T any] struct {
 	Msg     string `json:"msg"`
 	Payload T      `json:"payload"`
@@ -15,4 +17,9 @@ type SignupResDto struct {
 
 type JoinRoomDto struct {
 	RoomCode string `json:"roomCode"`
+}
+
+type SubmitBoardDto struct {
+	RoomID string           `json:"roomId"`
+	Ships  []game.ShipState `json:"ships"`
 }
