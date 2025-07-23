@@ -124,7 +124,9 @@ func JoinRoomHandler(
 	// Ignore error channel
 	_ = jobs.DispatchJob(ctx, events.JobEvent{
 		EventType: events.RecomputeRoomState,
-		Payload:   map[string]string{},
+		Payload: &jobs.RecalculateRoomEventPayload{
+			RoomID: room.RoomID,
+		},
 	})
 	return nil
 }
