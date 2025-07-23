@@ -11,10 +11,6 @@ type ErrorChannel chan error
 
 type Job func(context.Context, events.JobEvent, ErrorChannel)
 
-type RecalculateRoomEventPayload struct {
-	RoomID string
-}
-
 func DispatchJob(ctx context.Context, e events.JobEvent) ErrorChannel {
 	var errCh ErrorChannel = make(chan error)
 	switch e.EventType {
