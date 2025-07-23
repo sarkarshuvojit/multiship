@@ -31,6 +31,25 @@ func matchAllPlayerState(
 	return true
 }
 
+func GetRoomStatusFromPlayerState(
+	players map[string]game.PlayerState,
+) (newRoomState game.RoomStatus, shouldUpdate bool) {
+	if len(players) < 3 {
+		return game.RoomStatusWaiting, false
+	}
+
+	// If we have enough players, room should be in board selection
+	newRoomState = game.RoomStatusBoardSelection
+	shouldUpdate = true
+
+	// If all players have submitted their boards, room is ready for gameplay
+	if matchAllPlayerState(players, game.PlayerStatusBoardReady) {
+		newRoomState = game.RoomStatusPlayersReady
+	}
+
+	return newRoomState, shouldUpdate
+}
+
 func RecalculateRoomState(
 	ctx context.Context,
 	e events.JobEvent,
@@ -51,30 +70,20 @@ func RecalculateRoomState(
 		return
 	}
 
-	if len(room.Players) < 3 {
+	newStatus, shouldUpdate := GetRoomStatusFromPlayerState(room.Players)
+	
+	if !shouldUpdate {
 		slog.Debug("Too less players", "count", len(room.Players))
 		errCh <- nil
 		return
 	}
 
-	room.Status = game.RoomStatusBoardSelection
+	room.Status = newStatus
 	if err := repo.UpdateRoom(db, room); err != nil {
 		errCh <- err
 		return
 	}
 	slog.Info("Updated room status", "newStatus", room.Status)
-
-	// If all players have submitted their boards
-	// room is now in Players ready
-	// And the turn based logic can begin
-	if matchAllPlayerState(room.Players, game.PlayerStatusBoardReady) {
-		room.Status = game.RoomStatusPlayersReady
-		if err := repo.UpdateRoom(db, room); err != nil {
-			errCh <- err
-			return
-		}
-		slog.Info("Updated room status", "newStatus", room.Status)
-	}
 
 }
 
