@@ -2,7 +2,7 @@
 
 [![Run tests](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml/badge.svg)](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml)
 
-A real-time multiplayer Battleship game built with Go and React. Players can create rooms, join games, and battle against multiple opponents in classic naval warfare gameplay.
+A real-time multiplayer(upto 3 players at the moment) Battleship game built with Go and React. Players can create rooms, join games, and battle against multiple opponents in classic naval warfare gameplay.
 
 ## Status
 
