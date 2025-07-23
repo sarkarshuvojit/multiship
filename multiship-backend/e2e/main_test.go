@@ -10,6 +10,7 @@ import (
 var shutdown context.CancelFunc
 
 func TestMain(m *testing.M) {
+	slog.SetLogLoggerLevel(slog.LevelDebug.Level())
 	// Setup
 	stop, ready := StartWebsocketServer()
 	shutdown = stop
