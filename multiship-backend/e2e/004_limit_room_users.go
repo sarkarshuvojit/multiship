@@ -10,7 +10,7 @@ import (
 )
 
 func TestRoomRejectsFourthPlayer(t *testing.T) {
-	url := "ws://localhost:5000/ws"
+	url := fmt.Sprintf("ws://localhost:%s/ws", TestServerPort)
 
 	// Create 4 WebSocket connections
 	c1, err := NewTestClient(url)
