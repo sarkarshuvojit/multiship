@@ -26,6 +26,8 @@ func GetEnvOrDefault(key string, defaultValue string) string {
 
 var TestServerPort string = GetEnvOrDefault("PORT", "5555")
 
+var MockDB = state.NewInMemState()
+
 type TestClient struct {
 	conn     *websocket.Conn
 	messages chan events.OutboundEvent
@@ -111,18 +113,17 @@ func (c *TestClient) Close() error {
 	return c.conn.Close()
 }
 
-func StartWebsocketServer() (func(), chan bool) {
+func StartWebsocketServer(db state.State) (func(), chan bool) {
 	ctx, cancel := context.WithCancel(
 		context.Background(),
 	)
 	ready := make(chan bool)
-	go func(context context.Context) {
+	go func(context context.Context, _db state.State) {
 		wt := api.NewWebsocketAPI()
 		wt.InitHandlers()
 
 		// Add Dependencies
-		db := state.NewInMemState()
-		wt.AddDependency(utils.Redis, db)
+		wt.AddDependency(utils.Redis, _db)
 
 		// Add event handlers
 		wt.HandleEvent(events.Signup, handlers.SignupHandler)
@@ -132,7 +133,7 @@ func StartWebsocketServer() (func(), chan bool) {
 
 		ready <- true
 		slog.Error("Http Server Error", "err", http.ListenAndServe(":"+TestServerPort, nil))
-	}(ctx)
+	}(ctx, db)
 
 	return cancel, ready
 }

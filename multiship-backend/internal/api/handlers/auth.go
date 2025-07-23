@@ -18,13 +18,13 @@ func SignupHandler(
 	ctx context.Context,
 	event events.InboundEvent,
 ) error {
-	ws := utils.GetFromContextGeneric[*api.WebsocketAPI](
+	ws := utils.FromContext[*api.WebsocketAPI](
 		ctx, utils.WebsocketAPI,
 	)
-	s := utils.GetFromContextGeneric[*melody.Session](
+	s := utils.FromContext[*melody.Session](
 		ctx, utils.Session,
 	)
-	db := utils.GetFromContextGeneric[state.State](
+	db := utils.FromContext[state.State](
 		ctx, utils.Redis,
 	)
 	var payload dto.SignupDto

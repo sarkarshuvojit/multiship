@@ -9,9 +9,11 @@ import (
 
 var shutdown context.CancelFunc
 
+
 func TestMain(m *testing.M) {
+	slog.SetLogLoggerLevel(slog.LevelDebug.Level())
 	// Setup
-	stop, ready := StartWebsocketServer()
+	stop, ready := StartWebsocketServer(MockDB)
 	shutdown = stop
 
 	<-ready

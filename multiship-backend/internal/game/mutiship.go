@@ -23,7 +23,7 @@ func NewRoom(
 		RoomID:          roomID,
 		Code:            createRoomCode(),
 		LeaderSessionID: leaderSessionID,
-		Status:          Idle,
+		Status:          RoomStatusIdle,
 		PlayerSessions:  []string{leaderSessionID},
 		Players: map[string]PlayerState{
 			leaderSessionID: *NewPlayer(leaderSessionID),
