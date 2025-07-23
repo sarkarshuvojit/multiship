@@ -2,36 +2,139 @@
 
 [![Run tests](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml/badge.svg)](https://github.com/sarkarshuvojit/multiship/actions/workflows/main.yml)
 
-This is a web-based Battleship game designed for multiple players. The UI features a player grid and a slider to view each opponent's grid.
+A real-time multiplayer Battleship game built with Go and React. Players can create rooms, join games, and battle against multiple opponents in classic naval warfare gameplay.
+
+## Status
+
+**Work in Progress** - This project is actively under development. Core multiplayer functionality is implemented with ongoing enhancements to game mechanics and user experience.
+
+## Architecture
+
+### Backend (`multiship-backend/`)
+- **Language**: Go 1.24.2
+- **WebSocket Framework**: Melody (gorilla/websocket)
+- **State Management**: Redis with in-memory fallback
+- **Architecture**: Event-driven system with async job processing
+- **Testing**: E2E WebSocket tests
+
+### Frontend (`multiship-ui/`)
+- **Framework**: React 19 with TypeScript
+- **Build Tool**: Vite
+- **State Management**: Redux Toolkit
+- **Styling**: TailwindCSS
+- **WebSocket Integration**: Custom middleware with typed events
 
 ## Features
 
-- Multi-player gameplay
-- 10x10 grids for each player
-- Intuitive UI with slider to switch between opponents
+### Implemented
+- Real-time WebSocket communication
+- Multi-player room creation and management
+- User authentication and live user tracking
+- Event-driven architecture with typed events
+- Background job processing for game state management
+- Redis-backed state persistence
+- Responsive React UI with grid-based gameplay
 
-## Tasks
+### In Development
+- Complete Battleship game logic implementation
+- Enhanced UI/UX for ship placement and targeting
+- Game state synchronization improvements
+- Advanced room management features
 
-| Task # | Description                                              | Status   |
-|--------|----------------------------------------------------------|----------|
-| 1      | Set up project structure and dependencies                | ☐        |
-| 2      | Implement 10x10 grid component                           | ☐        |
-| 3      | Create UI layout: player grid (right), opponents (left)  | ☐        |
-| 4      | Add slider to toggle between opponent grids              | ☐        |
-| 5      | Add captions and labels ("You" under player grid)        | ☐        |
-| 6      | Implement game logic for three players                   | ☐        |
-| 7      | Handle user input and firing mechanics                   | ☐        |
-| 8      | Display hit/miss feedback on grids                       | ☐        |
-| 9      | Style UI for clarity and responsiveness                  | ☐        |
-| 10     | Write tests and documentation                            | ☐        |
+## Quick Start
 
-## Getting Started
+### Prerequisites
+- Go 1.24.2 or later
+- Node.js and Yarn
+- Redis (or use Docker Compose)
 
-1. Clone the repository.
-2. Install dependencies: `npm install`
-3. Run the development server: `npm start`
+### Backend Setup
+```bash
+cd multiship-backend
+
+# Start Redis (using Docker)
+docker-compose up -d
+
+# Run development server
+make serve
+
+# Run tests
+make test
+```
+
+### Frontend Setup
+```bash
+cd multiship-ui
+
+# Install dependencies
+yarn install
+
+# Start development server
+yarn dev
+
+# Build for production
+yarn build
+```
+
+## Development
+
+### Backend Commands
+- `make serve` - Start development server
+- `make test` - Run all tests
+- `make testv` - Run tests with verbose output
+- `make testw` - Run tests in watch mode
+
+### Frontend Commands
+- `yarn dev` - Start development server
+- `yarn build` - Build for production
+- `yarn lint` - Run ESLint
+- `yarn preview` - Preview production build
+
+### Environment Variables
+Backend configuration:
+- `REDIS_URL` (default: localhost:6379)
+- `REDIS_PASSWORD` (default: localpass)
+- `REDIS_USERNAME` (default: empty)
+- `REDIS_USE_TLS` (default: NO)
+- `PORT` (default: 5000)
+
+## Project Structure
+
+```
+multiship/
+├── multiship-backend/          # Go WebSocket API server
+│   ├── internal/api/          # WebSocket handlers and events
+│   ├── internal/game/         # Battleship game logic
+│   ├── e2e/                   # End-to-end tests
+│   └── cmd/serve/             # Server entry point
+└── multiship-ui/              # React frontend
+    ├── src/components/        # React components
+    ├── src/features/          # Redux slices
+    ├── src/ws/               # WebSocket client
+    └── src/types/            # TypeScript definitions
+```
+
+## Communication Protocol
+
+The application uses a WebSocket-based real-time communication system with typed events:
+
+- **Inbound Events**: `Signup`, `CreateRoom`, `JoinRoom`, `SubmitBoard`
+- **Outbound Events**: `LiveUserUpdate`, `RoomStateUpdate`, `GameStateUpdate`
+- **Event System**: Strongly typed with Go structs and TypeScript interfaces
+
+## Testing
+
+- **Backend**: E2E WebSocket tests covering connectivity, user management, and room operations
+- **Frontend**: Component and integration tests (planned)
+
+## Contributing
+
+This is a work-in-progress project. Key areas for contribution:
+- Game logic completion and refinement
+- UI/UX improvements
+- Performance optimizations
+- Additional game features
 
 ## License
 
-MIT
-
+MIT License - see LICENSE file for details.
