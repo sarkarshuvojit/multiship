@@ -66,7 +66,7 @@ func (ws WebsocketAPI) SendResponse(
 	eventType events.OutboundEventType,
 	payload any,
 ) {
-	s := utils.GetFromContextGeneric[*melody.Session](ctx, utils.Session)
+	s := utils.FromContext[*melody.Session](ctx, utils.Session)
 	r := events.OutboundEvent{
 		EventType: eventType,
 		Payload:   payload,
@@ -135,12 +135,12 @@ func (ws *WebsocketAPI) hydrateContext(
 		utils.Session:      s,
 	}
 	for k, v := range ctxVariables {
-		ctx = utils.SetToContext(ctx, k, v)
+		ctx = utils.ToContext(ctx, k, v)
 	}
 
 	// Extended Dependencies
 	for k, v := range ws.deps {
-		ctx = utils.SetToContext(ctx, k, v)
+		ctx = utils.ToContext(ctx, k, v)
 	}
 	return ctx
 }
@@ -154,7 +154,7 @@ func (ws *WebsocketAPI) initConnectHandler() error {
 			"msg":       "Welcome to our server",
 			"sessionId": sessionID,
 		})
-		db := utils.GetFromContextGeneric[state.State](
+		db := utils.FromContext[state.State](
 			ctx, utils.Redis,
 		)
 		if err := repo.IncrementLiveUsers(db); err != nil {
@@ -184,7 +184,7 @@ func (ws *WebsocketAPI) initDisconnectHandler() error {
 			return
 		}
 		slog.Debug("Known user disconnected", "sessionID", sessionID)
-		db := utils.GetFromContextGeneric[state.State](
+		db := utils.FromContext[state.State](
 			ctx, utils.Redis,
 		)
 		if err := repo.DecrementLiveUsers(db); err != nil {

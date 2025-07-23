@@ -13,7 +13,7 @@ const (
 	Redis                   = "redis"
 )
 
-func SetToContext[T any](
+func ToContext[T any](
 	ctx context.Context,
 	key ContextKey,
 	val T,
@@ -21,7 +21,7 @@ func SetToContext[T any](
 	return context.WithValue(ctx, key, val)
 }
 
-func GetFromContextGeneric[T any](
+func FromContext[T any](
 	ctx context.Context,
 	key ContextKey,
 ) T {

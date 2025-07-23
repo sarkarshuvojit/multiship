@@ -15,9 +15,16 @@ type RecalculateRoomEventPayload struct {
 	RoomID string
 }
 
-func isRoomReady(players map[string]game.PlayerState) bool {
+func matchAllPlayerState(
+	players map[string]game.PlayerState,
+	targetPlayerStatus game.PlayerStatus,
+) bool {
 	for _, player := range players {
-		if player.Status != game.PlayerStatusBoardReady {
+		if player.Status != targetPlayerStatus {
+			slog.Debug("Status Mismatch",
+				"curPlayerStatus", player.Status,
+				"targetStatus", targetPlayerStatus,
+			)
 			return false
 		}
 	}
@@ -34,17 +41,39 @@ func RecalculateRoomState(
 
 	roomID := payload.RoomID
 
-	db := utils.GetFromContextGeneric[state.State](
+	db := utils.FromContext[state.State](
 		ctx, utils.Redis,
 	)
 
 	room, err := repo.GetRoomByID(db, roomID)
 	if err != nil {
 		errCh <- events.RoomNotFound
+		return
 	}
 
-	if isRoomReady(room.Players) {
+	if len(room.Players) < 3 {
+		slog.Debug("Too less players", "count", len(room.Players))
+		errCh <- nil
+		return
+	}
+
+	room.Status = game.RoomStatusBoardSelection
+	if err := repo.UpdateRoom(db, room); err != nil {
+		errCh <- err
+		return
+	}
+	slog.Info("Updated room status", "newStatus", room.Status)
+
+	// If all players have submitted their boards
+	// room is now in Players ready
+	// And the turn based logic can begin
+	if matchAllPlayerState(room.Players, game.PlayerStatusBoardReady) {
 		room.Status = game.RoomStatusPlayersReady
+		if err := repo.UpdateRoom(db, room); err != nil {
+			errCh <- err
+			return
+		}
+		slog.Info("Updated room status", "newStatus", room.Status)
 	}
 
 }

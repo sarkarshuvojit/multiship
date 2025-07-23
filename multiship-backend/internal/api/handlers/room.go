@@ -26,13 +26,13 @@ func CreateRoomHandler(
 	ctx context.Context,
 	event events.InboundEvent,
 ) error {
-	ws := utils.GetFromContextGeneric[*api.WebsocketAPI](
+	ws := utils.FromContext[*api.WebsocketAPI](
 		ctx, utils.WebsocketAPI,
 	)
-	s := utils.GetFromContextGeneric[*melody.Session](
+	s := utils.FromContext[*melody.Session](
 		ctx, utils.Session,
 	)
-	db := utils.GetFromContextGeneric[state.State](
+	db := utils.FromContext[state.State](
 		ctx, utils.Redis,
 	)
 	slog.Debug("Handling create room")
@@ -67,13 +67,13 @@ func JoinRoomHandler(
 	ctx context.Context,
 	event events.InboundEvent,
 ) error {
-	ws := utils.GetFromContextGeneric[*api.WebsocketAPI](
+	ws := utils.FromContext[*api.WebsocketAPI](
 		ctx, utils.WebsocketAPI,
 	)
-	s := utils.GetFromContextGeneric[*melody.Session](
+	s := utils.FromContext[*melody.Session](
 		ctx, utils.Session,
 	)
-	db := utils.GetFromContextGeneric[state.State](
+	db := utils.FromContext[state.State](
 		ctx, utils.Redis,
 	)
 	slog.Debug("Handling join room")
@@ -83,11 +83,12 @@ func JoinRoomHandler(
 		return err
 	}
 
-	sessionID, found := s.Get("sessionID")
+	_sessionID, found := s.Get("sessionID")
+	sessionID := _sessionID.(string)
 	if !found {
 		return errors.New("Session not found, please reconnect")
 	}
-	if _, found := db.Get(state.SessionKey(sessionID.(string))); !found {
+	if _, found := db.Get(state.SessionKey(sessionID)); !found {
 		return events.UnauthenticatedErr
 	}
 
@@ -98,7 +99,7 @@ func JoinRoomHandler(
 
 	if slices.Contains(
 		room.PlayerSessions,
-		sessionID.(string),
+		sessionID,
 	) {
 		return events.RoomAlreadyJoinedErr
 	}
@@ -107,7 +108,13 @@ func JoinRoomHandler(
 		return events.RoomFull
 	}
 
-	room.PlayerSessions = append(room.PlayerSessions, sessionID.(string))
+	room.PlayerSessions = append(room.PlayerSessions, sessionID)
+	room.Players[sessionID] = game.PlayerState{
+		SessionID: sessionID,
+		Status:    game.PlayerStatusJoined,
+		Board:     [][]game.CellState{},
+		Ships:     []game.ShipState{},
+	}
 	if err := repo.UpdateRoom(db, room); err != nil {
 		return err
 	}
@@ -122,26 +129,27 @@ func JoinRoomHandler(
 	ws.SendResponse(ctx, events.RoomJoined, res)
 
 	// Ignore error channel
-	_ = jobs.DispatchJob(ctx, events.JobEvent{
+	errCh := jobs.DispatchJob(ctx, events.JobEvent{
 		EventType: events.RecomputeRoomState,
 		Payload: &jobs.RecalculateRoomEventPayload{
 			RoomID: room.RoomID,
 		},
 	})
-	return nil
+
+	return <-errCh
 }
 
 func SubmitBoardHandler(
 	ctx context.Context,
 	event events.InboundEvent,
 ) error {
-	ws := utils.GetFromContextGeneric[*api.WebsocketAPI](
+	ws := utils.FromContext[*api.WebsocketAPI](
 		ctx, utils.WebsocketAPI,
 	)
-	s := utils.GetFromContextGeneric[*melody.Session](
+	s := utils.FromContext[*melody.Session](
 		ctx, utils.Session,
 	)
-	db := utils.GetFromContextGeneric[state.State](
+	db := utils.FromContext[state.State](
 		ctx, utils.Redis,
 	)
 	slog.Debug("Handling submit board")
