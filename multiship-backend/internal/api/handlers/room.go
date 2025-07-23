@@ -178,7 +178,7 @@ func SubmitBoardHandler(
 
 	player := room.Players[sessionID.(string)]
 	player.Ships = payload.Ships
-	player.Status = game.BoardReady
+	player.Status = game.PlayerStatusBoardReady
 	room.Players[sessionID.(string)] = player
 
 	// TODO: check if all players have submitted or not; if yes update game state
