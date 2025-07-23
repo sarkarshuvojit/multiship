@@ -3,26 +3,26 @@ package game
 type RoomStatus string
 
 const (
-	Idle           RoomStatus = "IDLE"
-	Waiting                   = "WAITING"
-	BoardSelection            = "BOARD_SELECTION"
-	PlayersReady              = "PLAYERS_READY"
-	Ongoing                   = "ONGOING"
+	RoomStatusIdle           RoomStatus = "IDLE"
+	RoomStatusWaiting        RoomStatus = "WAITING"
+	RoomStatusBoardSelection RoomStatus = "BOARD_SELECTION"
+	RoomStatusPlayersReady   RoomStatus = "PLAYERS_READY"
+	RoomStatusOngoing        RoomStatus = "ONGOING"
 )
 
 type CellState string
 
 const (
-	Hidden CellState = "HIDDEN"
-	Hit    CellState = "HIT"
-	Miss   CellState = "MISS"
+	CellStateHidden CellState = "HIDDEN"
+	CellStateHit    CellState = "HIT"
+	CellStateMiss   CellState = "MISS"
 )
 
 type ShipDirection string
 
 const (
 	Horizontal ShipDirection = "HORIZONTAL"
-	Vertical                 = "VERTICAL"
+	Vertical   ShipDirection = "VERTICAL"
 )
 
 type ShipState struct {
@@ -35,9 +35,9 @@ type ShipState struct {
 type PlayerStatus string
 
 const (
-	Joined      PlayerStatus = "JOINED"
-	BoardReady               = "BOARD_READY"
-	CurrentTurn              = "CURRENT_TURN"
+	PlayerStatusJoined      PlayerStatus = "JOINED"
+	PlayerStatusBoardReady  PlayerStatus = "BOARD_READY"
+	PlayerStatusCurrentTurn PlayerStatus = "CURRENT_TURN"
 )
 
 type PlayerState struct {
@@ -50,7 +50,7 @@ type PlayerState struct {
 func NewPlayer(sessionID string) *PlayerState {
 	return &PlayerState{
 		SessionID: sessionID,
-		Status:    Joined,
+		Status:    PlayerStatusJoined,
 		Board:     [][]CellState{},
 		Ships:     []ShipState{},
 	}
