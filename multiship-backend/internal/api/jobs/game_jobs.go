@@ -31,7 +31,7 @@ func matchAllPlayerState(
 	return true
 }
 
-func GetRoomStatusFromPlayerState(
+func getRoomStatusFromPlayerState(
 	players map[string]game.PlayerState,
 ) (newRoomState game.RoomStatus, shouldUpdate bool) {
 	if len(players) < 3 {
@@ -70,8 +70,8 @@ func RecalculateRoomState(
 		return
 	}
 
-	newStatus, shouldUpdate := GetRoomStatusFromPlayerState(room.Players)
-	
+	newStatus, shouldUpdate := getRoomStatusFromPlayerState(room.Players)
+
 	if !shouldUpdate {
 		slog.Debug("Too less players", "count", len(room.Players))
 		errCh <- nil

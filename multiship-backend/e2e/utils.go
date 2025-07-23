@@ -26,6 +26,8 @@ func GetEnvOrDefault(key string, defaultValue string) string {
 
 var TestServerPort string = GetEnvOrDefault("PORT", "5555")
 
+var MockDB = state.NewInMemState()
+
 type TestClient struct {
 	conn     *websocket.Conn
 	messages chan events.OutboundEvent

@@ -70,7 +70,7 @@ func TestGetRoomStatusFromPlayerState(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			roomStatus, shouldUpdate := GetRoomStatusFromPlayerState(tt.players)
+			roomStatus, shouldUpdate := getRoomStatusFromPlayerState(tt.players)
 
 			if roomStatus != tt.expectedRoomStatus {
 				t.Errorf("GetRoomStatusFromPlayerState() roomStatus = %v, want %v", roomStatus, tt.expectedRoomStatus)
