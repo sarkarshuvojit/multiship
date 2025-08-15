@@ -2,6 +2,8 @@ package e2e
 
 import (
 	"context"
+	"flag"
+	"io"
 	"log/slog"
 	"os"
 	"testing"
@@ -9,9 +11,13 @@ import (
 
 var shutdown context.CancelFunc
 
-
 func TestMain(m *testing.M) {
-	slog.SetLogLoggerLevel(slog.LevelDebug.Level())
+	flag.Parse()
+	if testing.Verbose() {
+		slog.SetLogLoggerLevel(slog.LevelDebug.Level())
+	} else {
+		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	}
 	// Setup
 	stop, ready := StartWebsocketServer(MockDB)
 	shutdown = stop
