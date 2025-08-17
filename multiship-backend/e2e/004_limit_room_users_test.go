@@ -57,6 +57,7 @@ func TestRoomRejectsFourthPlayer(t *testing.T) {
 	t.Run("Client3_SignupAndJoinRoom", func(t *testing.T) {
 		AssertSignup(t, c3, email3)
 		AssertJoinRoom(t, c3, roomCode)
+		time.Sleep(100 * time.Millisecond)
 
 		// Inspect room detail to check if state changed using MockDB
 		room, err := repo.GetRoomByRoomCode(MockDB, roomCode)
@@ -67,7 +68,6 @@ func TestRoomRejectsFourthPlayer(t *testing.T) {
 		assert.Len(t, room.PlayerSessions, 3, "Room should have exactly 3 players")
 		assert.Len(t, room.Players, 3, "Room players map should have exactly 3 entries")
 
-		time.Sleep(100 * time.Millisecond)
 		// Check that room status changed to board selection
 		assert.Equal(t, game.RoomStatusBoardSelection, room.Status, "Room should be in board selection state")
 	})
