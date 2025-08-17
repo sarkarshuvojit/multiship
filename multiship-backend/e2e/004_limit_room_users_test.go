@@ -67,6 +67,7 @@ func TestRoomRejectsFourthPlayer(t *testing.T) {
 		assert.Len(t, room.PlayerSessions, 3, "Room should have exactly 3 players")
 		assert.Len(t, room.Players, 3, "Room players map should have exactly 3 entries")
 
+		time.Sleep(100 * time.Millisecond)
 		// Check that room status changed to board selection
 		assert.Equal(t, game.RoomStatusBoardSelection, room.Status, "Room should be in board selection state")
 	})
