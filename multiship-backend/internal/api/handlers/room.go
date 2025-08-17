@@ -198,7 +198,7 @@ func SubmitBoardHandler(
 		Payload: map[string]string{},
 	}
 	slog.Info("Board submitted")
-	ws.SendResponse(ctx, events.RoomJoined, res)
+	ws.SendResponse(ctx, events.BoardSubmitted, res)
 
 	// Dispatch job to recalculate room state after board submission
 	errCh := jobs.DispatchJob(ctx, events.JobEvent{
