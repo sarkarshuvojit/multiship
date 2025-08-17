@@ -114,16 +114,7 @@ func TestBoardSelectionWorkflow(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, room)
 
-		// Find player 1's session ID by email (we need to get it from sessions)
-		var player1SessionID string
-		for sessionID := range room.Players {
-			player1SessionID = sessionID
-			break // For simplicity, we'll use the first one
-		}
-
-		player1 := room.Players[player1SessionID]
-		assert.Equal(t, game.PlayerStatusBoardReady, player1.Status, "Player 1 should have board ready status")
-		assert.Len(t, player1.Ships, 10, "Player 1 should have 10 ships")
+		AssertPlayerStatusCount(t, room, game.PlayerStatusBoardReady, 1)
 	})
 
 	t.Run("Client2_SubmitBoard", func(t *testing.T) {
@@ -137,13 +128,7 @@ func TestBoardSelectionWorkflow(t *testing.T) {
 		assert.Equal(t, game.RoomStatusBoardSelection, room.Status, "Room should still be in board selection state")
 
 		// Count ready players
-		readyPlayers := 0
-		for _, player := range room.Players {
-			if player.Status == game.PlayerStatusBoardReady {
-				readyPlayers++
-			}
-		}
-		assert.Equal(t, 2, readyPlayers, "Should have 2 ready players now")
+		AssertPlayerStatusCount(t, room, game.PlayerStatusBoardReady, 2)
 	})
 
 	t.Run("Client3_SubmitBoard_AndVerifyRoomStatusChange", func(t *testing.T) {
@@ -156,13 +141,7 @@ func TestBoardSelectionWorkflow(t *testing.T) {
 		assert.NotNil(t, room)
 
 		// Check all players are ready
-		readyPlayers := 0
-		for _, player := range room.Players {
-			assert.Equal(t, game.PlayerStatusBoardReady, player.Status, "All players should have board ready status")
-			assert.Len(t, player.Ships, 10, "Each player should have 10 ships")
-			readyPlayers++
-		}
-		assert.Equal(t, 3, readyPlayers, "Should have 3 ready players")
+		AssertPlayerStatusCount(t, room, game.PlayerStatusBoardReady, 3)
 
 		// Most important: Verify room status changed to Ongoing (which indicates game is now active)
 		assert.Equal(t, game.RoomStatusOngoing, room.Status, "Room should be in ongoing state after all players submit boards")
