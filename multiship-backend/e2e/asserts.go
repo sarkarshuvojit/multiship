@@ -1,10 +1,13 @@
 package e2e
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/dto"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
+	"github.com/sarkarshuvojit/multiship-backend/internal/game"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -47,4 +50,33 @@ func AssertJoinRoom(
 	assert.NoError(t, err)
 
 	return msg
+}
+
+func AssertSubmitBoard(t *testing.T, c *TestClient, roomID string, ships []game.ShipState) {
+	err := c.SendMessage(events.SubmitBoard, dto.SubmitBoardDto{
+		RoomID: roomID,
+		Ships:  ships,
+	})
+	assert.NoError(t, err)
+
+	_, err = c.WaitForMessage(events.BoardSubmitted, 5*time.Second)
+	assert.NoError(t, err)
+}
+
+func AssertPlayerStatusCount(
+	t *testing.T,
+	room *game.RoomState,
+	expState game.PlayerStatus, expCount int,
+) {
+	readyPlayers := 0
+	for _, player := range room.Players {
+		if player.Status == expState {
+			readyPlayers++
+		}
+	}
+	assert.Equal(
+		t, expCount, readyPlayers,
+		fmt.Sprintf("Should have %d ready players now", expCount),
+	)
+
 }

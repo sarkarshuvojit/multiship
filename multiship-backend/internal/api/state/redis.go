@@ -35,8 +35,8 @@ func NewRedisState(
 
 	ctx := context.Background()
 	if err := rdb.Ping(ctx).Err(); err != nil {
-		slog.Default().Error("Redis ping failed", slog.String("error", err.Error()))
-		slog.Default().Error("Tried to connect via", slog.Any("opts", opts))
+		slog.Error("Redis ping failed", slog.String("error", err.Error()))
+		slog.Error("Tried to connect via", slog.Any("opts", opts))
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func NewRedisState(
 func (r *RedisState) Set(key, value string) error {
 	start := time.Now()
 	err := r.client.Set(r.ctx, key, value, DEFAULT_EXPIRY).Err()
-	slog.Default().Debug("Redis SET",
+	slog.Debug("Redis SET",
 		slog.String("key", key),
 		slog.Duration("took", time.Since(start)),
 		slog.Bool("success", err == nil),
@@ -61,10 +61,10 @@ func (r *RedisState) Get(key string) (string, bool) {
 	start := time.Now()
 	val, err := r.client.Get(r.ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
-		slog.Default().Warn("Redis GET - key not found", slog.String("key", key))
+		slog.Warn("Redis GET - key not found", slog.String("key", key))
 		return "", false
 	}
-	slog.Default().Debug("Redis GET",
+	slog.Debug("Redis GET",
 		slog.String("key", key),
 		slog.Duration("took", time.Since(start)),
 		slog.Bool("success", err == nil),
@@ -75,7 +75,7 @@ func (r *RedisState) Get(key string) (string, bool) {
 func (r *RedisState) Delete(key string) error {
 	start := time.Now()
 	n, err := r.client.Del(r.ctx, key).Result()
-	slog.Default().Debug("Redis DEL",
+	slog.Debug("Redis DEL",
 		slog.String("key", key),
 		slog.Int64("deleted_count", n),
 		slog.Duration("took", time.Since(start)),
@@ -88,7 +88,7 @@ func (r *RedisState) Has(key string) (bool, error) {
 	start := time.Now()
 	n, err := r.client.Exists(r.ctx, key).Result()
 	found := n > 0
-	slog.Default().Debug("Redis EXISTS",
+	slog.Debug("Redis EXISTS",
 		slog.String("key", key),
 		slog.Bool("exists", found),
 		slog.Duration("took", time.Since(start)),
@@ -103,7 +103,7 @@ func (r *RedisState) Incr(key string) error {
 	// Try to set the key to "0" only if it doesn't exist
 	_, err := r.client.SetNX(r.ctx, key, 0, 0).Result()
 	if err != nil {
-		slog.Default().Error("Redis SETNX failed",
+		slog.Error("Redis SETNX failed",
 			slog.String("key", key),
 			slog.Duration("took", time.Since(start)),
 			slog.Bool("success", false),
@@ -114,7 +114,7 @@ func (r *RedisState) Incr(key string) error {
 
 	// Now safely increment
 	val, err := r.client.Incr(r.ctx, key).Result()
-	slog.Default().Debug("Redis INCR",
+	slog.Debug("Redis INCR",
 		slog.String("key", key),
 		slog.Int64("new_value", val),
 		slog.Duration("took", time.Since(start)),
@@ -131,7 +131,7 @@ func (r *RedisState) Decr(key string) error {
 	// Try to set the key to "0" only if it doesn't exist
 	_, err := r.client.SetNX(r.ctx, key, 0, 0).Result()
 	if err != nil {
-		slog.Default().Error("Redis SETNX failed",
+		slog.Error("Redis SETNX failed",
 			slog.String("key", key),
 			slog.Duration("took", time.Since(start)),
 			slog.Bool("success", false),
@@ -142,7 +142,7 @@ func (r *RedisState) Decr(key string) error {
 
 	// Now safely decrement
 	val, err := r.client.Decr(r.ctx, key).Result()
-	slog.Default().Debug("Redis DECR",
+	slog.Debug("Redis DECR",
 		slog.String("key", key),
 		slog.Int64("new_value", val),
 		slog.Duration("took", time.Since(start)),

@@ -8,6 +8,7 @@ const (
 	GeneralError                     = "GENERAL_ERROR"
 	Welcome                          = "WELCOME"
 	RoomJoined                       = "ROOM_JOINED"
+	BoardSubmitted                   = "BOARD_SUBMITTED"
 	NextTurn                         = "NEXT_TURN"
 	HitSuccessful                    = "HIT_ATTEMPTED"
 	HitFailed                        = "HIT_FAILED"

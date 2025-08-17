@@ -189,9 +189,6 @@ func SubmitBoardHandler(
 	player.Status = game.PlayerStatusBoardReady
 	room.Players[sessionID.(string)] = player
 
-	// TODO: check if all players have submitted or not; if yes update game state
-	// Possibly create an async job queue
-
 	if err := repo.UpdateRoom(db, room); err != nil {
 		return err
 	}
@@ -200,8 +197,24 @@ func SubmitBoardHandler(
 		Msg:     "Board Sumitted Successfully",
 		Payload: map[string]string{},
 	}
-	slog.Info("Board submitted joined")
-	ws.SendResponse(ctx, events.RoomJoined, res)
+	slog.Info("Board submitted")
+	ws.SendResponse(ctx, events.BoardSubmitted, res)
+
+	// Dispatch job to recalculate room state after board submission
+	errCh := jobs.DispatchJob(ctx, events.JobEvent{
+		EventType: events.RecomputeRoomState,
+		Payload: &jobs.RecalculateRoomEventPayload{
+			RoomID: room.RoomID,
+		},
+	})
+
+	// Don't block on the job completion - let it run async
+	go func() {
+		if err := <-errCh; err != nil {
+			slog.Error("Failed to recalculate room state after board submission", "error", err, "roomID", room.RoomID)
+		}
+	}()
+
 	return nil
 }
 

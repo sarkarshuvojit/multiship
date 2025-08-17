@@ -44,7 +44,7 @@ func getRoomStatusFromPlayerState(
 
 	// If all players have submitted their boards, room is ready for gameplay
 	if matchAllPlayerState(players, game.PlayerStatusBoardReady) {
-		newRoomState = game.RoomStatusPlayersReady
+		newRoomState = game.RoomStatusOngoing
 	}
 
 	return newRoomState, shouldUpdate
@@ -83,7 +83,9 @@ func RecalculateRoomState(
 		errCh <- err
 		return
 	}
+
 	slog.Info("Updated room status", "newStatus", room.Status)
+	errCh <- nil
 
 }
 

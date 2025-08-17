@@ -63,7 +63,7 @@ func TestGetRoomStatusFromPlayerState(t *testing.T) {
 				"player2": {Status: game.PlayerStatusBoardReady},
 				"player3": {Status: game.PlayerStatusBoardReady},
 			},
-			expectedRoomStatus:   game.RoomStatusPlayersReady,
+			expectedRoomStatus:   game.RoomStatusOngoing,
 			expectedShouldUpdate: true,
 		},
 	}

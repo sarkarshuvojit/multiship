@@ -57,6 +57,7 @@ func TestRoomRejectsFourthPlayer(t *testing.T) {
 	t.Run("Client3_SignupAndJoinRoom", func(t *testing.T) {
 		AssertSignup(t, c3, email3)
 		AssertJoinRoom(t, c3, roomCode)
+		time.Sleep(100 * time.Millisecond)
 
 		// Inspect room detail to check if state changed using MockDB
 		room, err := repo.GetRoomByRoomCode(MockDB, roomCode)
