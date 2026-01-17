@@ -13,6 +13,7 @@ React TypeScript frontend for a multiplayer Battleship game with Redux state man
 - **Build Tool:** Vite 6
 - **State:** Redux Toolkit
 - **Styling:** TailwindCSS v4
+- **UI Components:** RetroUI (NeoBrutalism design system)
 - **Routing:** React Router DOM 7
 - **Icons:** Lucide React
 
@@ -257,7 +258,66 @@ import { cn } from '@/lib/utils';
 
 ## Design Guidelines
 
-*(To be refined by user)*
+### RetroUI - Primary Component Library
+
+**ALWAYS use RetroUI components from https://www.retroui.dev/**
+
+RetroUI is a NeoBrutalism design system built on React and TailwindCSS. It provides bold, modern styling with stark visual elements, strong borders, and distinctive shadows.
+
+### Installing RetroUI Components
+
+```bash
+# Add components via shadcn CLI
+npx shadcn add @retroui/button
+npx shadcn add @retroui/input
+npx shadcn add @retroui/badge
+npx shadcn add @retroui/avatar
+npx shadcn add @retroui/accordion
+npx shadcn add @retroui/alert
+npx shadcn add @retroui/textarea
+npx shadcn add @retroui/drawer
+```
+
+### RetroUI Design Principles
+
+1. **NeoBrutalism Aesthetic** - Bold borders, stark contrasts, raw visual approach
+2. **Strong Shadows** - Distinctive drop shadows that give depth
+3. **Bold Typography** - Heavy, impactful text treatments
+4. **High Contrast** - Clear visual hierarchy with strong color contrasts
+
+### Component Usage
+
+Always check RetroUI docs first before creating custom components:
+
+```tsx
+// GOOD - Use RetroUI components
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+
+<Button variant="primary">Start Game</Button>
+<Input placeholder="Enter room code" />
+<Badge>Online</Badge>
+```
+
+```tsx
+// BAD - Don't create custom components when RetroUI has them
+<button className="custom-styles...">Start Game</button>
+```
+
+### When to Customize
+
+- Use RetroUI components as base, extend with Tailwind utilities
+- Maintain NeoBrutalism aesthetic when creating game-specific components
+- Keep strong borders and shadows consistent with RetroUI style
+
+### Color Palette
+
+Follow RetroUI's color conventions while adapting for game theme:
+- Primary actions: Bold, high-contrast colors
+- Backgrounds: Clean, minimal interference with game elements
+- Borders: Strong, visible borders (2-4px)
+- Shadows: Offset shadows for depth (e.g., `shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`)
 
 ## Anti-Patterns to Avoid
 
@@ -266,3 +326,5 @@ import { cn } from '@/lib/utils';
 - Don't bypass Redux for shared state
 - Don't use CSS files when Tailwind utilities suffice
 - Don't forget to handle loading/error states for async operations
+- **Don't create custom UI components when RetroUI has equivalents** - always check https://www.retroui.dev/ first
+- Don't deviate from NeoBrutalism aesthetic - maintain bold borders, shadows, and high contrast
