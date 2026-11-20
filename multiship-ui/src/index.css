@@ -1,3 +1,80 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-abyss: #070b16;
+  --color-deep: #0c1324;
+  --color-panel: #111a2e;
+  --color-panel-2: #16213a;
+  --color-line: rgb(148 163 184 / 0.12);
+  --color-water: #13203a;
+  --color-water-hover: #1b2d52;
+  --color-ship: #4b5d82;
+  --color-ship-edge: #7c90b8;
+  --color-accent: #22d3ee;
+  --color-accent-strong: #06b6d4;
+  --color-hit: #fb7185;
+  --color-hit-strong: #f43f5e;
+  --color-miss: #64748b;
+  --color-gold: #fbbf24;
+  --color-ok: #34d399;
+
+  --animate-splash: splash 520ms ease-out forwards;
+  --animate-boom: boom 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-rise: rise 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-pulse-ring: pulse-ring 1.8s ease-out infinite;
+
+  @keyframes splash {
+    0% { transform: scale(0.2); opacity: 0.9; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  @keyframes boom {
+    0% { transform: scale(0.3); filter: brightness(2.2); }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+  @keyframes rise {
+    0% { transform: translateY(8px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgb(34 211 238 / 0.45); }
+    100% { box-shadow: 0 0 0 14px rgb(34 211 238 / 0); }
+  }
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-abyss);
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgb(34 211 238 / 0.08), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgb(99 102 241 / 0.08), transparent 60%);
+  background-attachment: fixed;
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgb(34 211 238 / 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

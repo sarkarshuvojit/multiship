@@ -82,6 +82,7 @@ Backend accepts these environment variables:
 - `REDIS_USERNAME` (default: empty)
 - `REDIS_USE_TLS` (default: NO)
 - `PORT` (default: 5000)
+- `STATE_BACKEND` (default: redis; set to `memory` to run without Redis)
 
 ## Current Branch Context
 Working on `feat/async-jobs` branch which implements background job processing for game state management.

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import React from "react";
+import { Button } from "@/components/retroui/Button";
 
 function getTheGrid(): number[][] {
   return Array(10).fill(Array(10).fill(null));
@@ -104,16 +105,30 @@ export function GameScreen() {
   return (
     <div className="flex w-full max-w-5xl h-[540px] bg-white rounded-lg shadow-lg overflow-hidden">
     <div className="flex flex-col items-center justify-center w-1/2 bg-gray-50 relative">
-      <button id="prevBtn" className="absolute top-1/2 left-2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 rounded-full p-2 shadow" aria-label="Previous" onClick={toggleOpps}>
+      <Button
+        id="prevBtn"
+        variant="outline"
+        size="icon"
+        className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-gray-200 hover:bg-gray-300"
+        aria-label="Previous"
+        onClick={toggleOpps}
+      >
         <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
-      </button>
-      <button id="nextBtn" className="absolute top-1/2 right-2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 rounded-full p-2 shadow" aria-label="Next" onClick={toggleOpps}>
+      </Button>
+      <Button
+        id="nextBtn"
+        variant="outline"
+        size="icon"
+        className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-gray-200 hover:bg-gray-300"
+        aria-label="Next"
+        onClick={toggleOpps}
+      >
         <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-      </button>
+      </Button>
       <div className="w-full flex flex-col items-center">
         <div id="opponentGrids">
           <div className={["opp-grid", currOpp == 2 && "hidden"].join(" ")}>

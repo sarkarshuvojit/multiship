@@ -82,3 +82,27 @@ func TestGetRoomStatusFromPlayerState(t *testing.T) {
 		})
 	}
 }
+
+func TestNextRoomStatusHostStarted(t *testing.T) {
+	ready := game.PlayerState{Status: game.PlayerStatusBoardReady}
+	joined := game.PlayerState{Status: game.PlayerStatusJoined}
+
+	// Two ready players in a waiting room do not auto-start.
+	status, update := nextRoomStatus(game.RoomStatusWaiting, map[string]game.PlayerState{"a": ready, "b": ready})
+	if status != game.RoomStatusWaiting || update {
+		t.Fatalf("got %s/%v", status, update)
+	}
+	// Once the host starts, two ready players begin the battle.
+	status, _ = nextRoomStatus(game.RoomStatusBoardSelection, map[string]game.PlayerState{"a": ready, "b": ready})
+	if status != game.RoomStatusOngoing {
+		t.Fatalf("got %s", status)
+	}
+	status, _ = nextRoomStatus(game.RoomStatusBoardSelection, map[string]game.PlayerState{"a": ready, "b": joined})
+	if status != game.RoomStatusBoardSelection {
+		t.Fatalf("got %s", status)
+	}
+	// Ongoing / finished rooms are never touched.
+	if _, update := nextRoomStatus(game.RoomStatusFinished, map[string]game.PlayerState{"a": ready}); update {
+		t.Fatal("finished room should not update")
+	}
+}

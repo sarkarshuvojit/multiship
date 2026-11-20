@@ -9,4 +9,6 @@ const (
 	SubmitBoard                  = "SUBMIT_BOARD"
 	TryHit                       = "TRY_HIT"
 	StartGame                    = "START_GAME"
+	LeaveRoom                    = "LEAVE_ROOM"
+	Rematch                      = "REMATCH"
 )

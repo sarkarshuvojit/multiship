@@ -4,8 +4,10 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/sarkarshuvojit/multiship-backend/internal/api"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/repo"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/roomlock"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 	"github.com/sarkarshuvojit/multiship-backend/internal/game"
@@ -34,20 +36,33 @@ func matchAllPlayerState(
 func getRoomStatusFromPlayerState(
 	players map[string]game.PlayerState,
 ) (newRoomState game.RoomStatus, shouldUpdate bool) {
-	if len(players) < 3 {
+	return nextRoomStatus(game.RoomStatusWaiting, players)
+}
+
+// nextRoomStatus derives the room status from its current status and players.
+//   - A full room (or one the host started) is in board selection.
+//   - Once every player in board selection has a ready board, battle begins.
+//   - Ongoing and finished rooms are never changed here.
+func nextRoomStatus(
+	current game.RoomStatus,
+	players map[string]game.PlayerState,
+) (game.RoomStatus, bool) {
+	switch current {
+	case game.RoomStatusOngoing, game.RoomStatusFinished:
+		return current, false
+	}
+
+	inBoardSelection := current == game.RoomStatusBoardSelection ||
+		len(players) >= game.MaxPlayers
+	if !inBoardSelection {
 		return game.RoomStatusWaiting, false
 	}
 
-	// If we have enough players, room should be in board selection
-	newRoomState = game.RoomStatusBoardSelection
-	shouldUpdate = true
-
-	// If all players have submitted their boards, room is ready for gameplay
-	if matchAllPlayerState(players, game.PlayerStatusBoardReady) {
-		newRoomState = game.RoomStatusOngoing
+	if len(players) >= game.MinPlayers &&
+		matchAllPlayerState(players, game.PlayerStatusBoardReady) {
+		return game.RoomStatusOngoing, true
 	}
-
-	return newRoomState, shouldUpdate
+	return game.RoomStatusBoardSelection, true
 }
 
 func RecalculateRoomState(
@@ -64,27 +79,46 @@ func RecalculateRoomState(
 		ctx, utils.Redis,
 	)
 
+	unlock := roomlock.Lock(roomID)
 	room, err := repo.GetRoomByID(db, roomID)
 	if err != nil {
+		unlock()
 		errCh <- events.RoomNotFound
 		return
 	}
 
-	newStatus, shouldUpdate := getRoomStatusFromPlayerState(room.Players)
-
-	if !shouldUpdate {
-		slog.Debug("Too less players", "count", len(room.Players))
+	newStatus, shouldUpdate := nextRoomStatus(room.Status, room.Players)
+	if !shouldUpdate || newStatus == room.Status {
+		unlock()
+		slog.Debug("Room status unchanged", "status", room.Status, "count", len(room.Players))
 		errCh <- nil
 		return
 	}
 
 	room.Status = newStatus
-	if err := repo.UpdateRoom(db, room); err != nil {
+	if newStatus == game.RoomStatusOngoing && room.CurrentPlayer == "" {
+		if nextPlayer, ok := game.NextActivePlayer("", room.PlayerSessions, room.Players); ok {
+			room.CurrentPlayer = nextPlayer
+		}
+	}
+	err = repo.UpdateRoom(db, room)
+	unlock()
+	if err != nil {
 		errCh <- err
 		return
 	}
 
 	slog.Info("Updated room status", "newStatus", room.Status)
+	if wsVal := ctx.Value(utils.WebsocketAPI); wsVal != nil {
+		ws := wsVal.(*api.WebsocketAPI)
+		ws.BroadcastRoomState(room)
+		if room.Status == game.RoomStatusOngoing && room.CurrentPlayer != "" {
+			ws.SendToRoom(room, events.NextTurn, map[string]any{
+				"roomId":          room.RoomID,
+				"currentPlayerId": room.CurrentPlayer,
+			})
+		}
+	}
 	errCh <- nil
 
 }

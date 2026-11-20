@@ -1,4 +1,5 @@
 import { useDispatch } from 'react-redux';
+import { RetroButton } from '@/components/retro-ui/RetroButton';
 
 export const GameBoard = () => {
   const dispatch = useDispatch();
@@ -13,6 +14,5 @@ export const GameBoard = () => {
     });
   };
 
-  return <button onClick={() => tryHit(3, 4)}>Fire</button>;
+  return <RetroButton onClick={() => tryHit(3, 4)}>Fire</RetroButton>;
 };
-

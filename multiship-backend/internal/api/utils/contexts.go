@@ -8,9 +8,9 @@ type ContextKey string
 
 const (
 	Melody       ContextKey = "melody"
-	Session                 = "session"
-	WebsocketAPI            = "wsapi"
-	Redis                   = "redis"
+	Session      ContextKey = "session"
+	WebsocketAPI ContextKey = "wsapi"
+	Redis        ContextKey = "redis"
 )
 
 func ToContext[T any](

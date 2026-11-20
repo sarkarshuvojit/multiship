@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RetroButton } from '@/components/retro-ui/RetroButton';
 
 interface ShipTypeConfig {
   id?: number;
@@ -224,22 +225,22 @@ const BattleshipGenerator = () => {
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">Direction:</label>
             <div className="flex gap-2">
-              <button
-                className={`px-3 py-1 rounded text-sm ${
-                  placementDirection === 'horizontal' ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                }`}
+              <RetroButton
+                size="sm"
+                variant={placementDirection === 'horizontal' ? 'secondary' : 'ghost'}
+                className={placementDirection === 'horizontal' ? 'border-black' : 'border-gray-300 text-gray-700'}
                 onClick={() => setPlacementDirection('horizontal')}
               >
                 Horizontal
-              </button>
-              <button
-                className={`px-3 py-1 rounded text-sm ${
-                  placementDirection === 'vertical' ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                }`}
+              </RetroButton>
+              <RetroButton
+                size="sm"
+                variant={placementDirection === 'vertical' ? 'secondary' : 'ghost'}
+                className={placementDirection === 'vertical' ? 'border-black' : 'border-gray-300 text-gray-700'}
                 onClick={() => setPlacementDirection('vertical')}
               >
                 Vertical
-              </button>
+              </RetroButton>
             </div>
           </div>
           
@@ -280,12 +281,13 @@ const BattleshipGenerator = () => {
           </div>
           
           <div className="space-y-2">
-            <button
+            <RetroButton
               onClick={resetGrid}
-              className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              variant="danger"
+              className="w-full"
             >
               Reset Grid
-            </button>
+            </RetroButton>
           </div>
         </div>
       </div>
@@ -293,13 +295,12 @@ const BattleshipGenerator = () => {
       <div className="mt-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Generated Configuration</h2>
-          <button
+          <RetroButton
             onClick={() => navigator.clipboard.writeText(generateConfig())}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             disabled={totalShipsPlaced === 0}
           >
             Copy Config
-          </button>
+          </RetroButton>
         </div>
         <pre className="bg-gray-100 p-4 rounded border overflow-x-auto text-sm">
           {totalShipsPlaced > 0 ? generateConfig() : 'Place ships on the grid to generate configuration...'}

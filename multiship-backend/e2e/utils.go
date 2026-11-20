@@ -45,7 +45,7 @@ func NewTestClient(serverURL string) (*TestClient, error) {
 
 	client := &TestClient{
 		conn:     conn,
-		messages: make(chan events.OutboundEvent, 10),
+		messages: make(chan events.OutboundEvent, 512),
 		errors:   make(chan error, 10),
 		done:     make(chan struct{}),
 	}
@@ -130,6 +130,11 @@ func StartWebsocketServer(db state.State) (func(), chan bool) {
 		wt.HandleEvent(events.CreateRoom, handlers.CreateRoomHandler)
 		wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
 		wt.HandleEvent(events.SubmitBoard, handlers.SubmitBoardHandler)
+		wt.HandleEvent(events.TryHit, handlers.TryHitHandler)
+		wt.HandleEvent(events.StartGame, handlers.StartGameHandler)
+		wt.HandleEvent(events.LeaveRoom, handlers.LeaveRoomHandler)
+		wt.HandleEvent(events.Rematch, handlers.RematchHandler)
+		wt.OnDisconnect(handlers.DisconnectHook)
 
 		ready <- true
 		slog.Error("Http Server Error", "err", http.ListenAndServe(":"+TestServerPort, nil))

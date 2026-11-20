@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export enum HealthStatus {
   INIT = "INIT",
   CONNECTED = "CONNECTED",
-  DISCONNECTED = "CONNECTED"
+  DISCONNECTED = "DISCONNECTED"
 }
 
 interface HealthSlice {
@@ -22,7 +22,7 @@ const healthSlice = createSlice({
   name: 'health',
   initialState,
   reducers: {
-    healthChecked: (state, _action) => {
+    healthChecked: (state) => {
       console.info("Health checked");
       state.status = HealthStatus.CONNECTED;
       state.lastStatusAt = new Date().getTime();

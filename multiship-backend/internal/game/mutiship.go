@@ -11,6 +11,7 @@ type RoomState struct {
 	Status          RoomStatus             `json:"status"`
 	PlayerSessions  []string               `json:"playerSessions"`
 	CurrentPlayer   string                 `json:"currentPlayer"`
+	WinnerID        string                 `json:"winnerId"`
 	Players         map[string]PlayerState `json:"players"`
 }
 
@@ -31,3 +32,10 @@ func NewRoom(
 		CurrentPlayer: "",
 	}
 }
+
+const (
+	// MaxPlayers is the room capacity; reaching it starts board selection automatically.
+	MaxPlayers = 3
+	// MinPlayers is the smallest room the host may start manually.
+	MinPlayers = 2
+)
