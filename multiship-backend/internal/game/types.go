@@ -8,6 +8,7 @@ const (
 	RoomStatusBoardSelection RoomStatus = "BOARD_SELECTION"
 	RoomStatusPlayersReady   RoomStatus = "PLAYERS_READY"
 	RoomStatusOngoing        RoomStatus = "ONGOING"
+	RoomStatusFinished       RoomStatus = "FINISHED"
 )
 
 type CellState string
@@ -41,19 +42,21 @@ const (
 )
 
 type PlayerState struct {
-	SessionID string        `json:"sessionId"`
-	Status    PlayerStatus  `json:"status"`
-	Board     [][]CellState `json:"board"`
-	Ships     []ShipState   `json:"ships"`
-	Eliminated bool         `json:"eliminated"`
+	SessionID  string        `json:"sessionId"`
+	Name       string        `json:"name"`
+	Avatar     string        `json:"avatar"`
+	Status     PlayerStatus  `json:"status"`
+	Board      [][]CellState `json:"board"`
+	Ships      []ShipState   `json:"ships"`
+	Eliminated bool          `json:"eliminated"`
 }
 
 func NewPlayer(sessionID string) *PlayerState {
 	return &PlayerState{
-		SessionID: sessionID,
-		Status:    PlayerStatusJoined,
-		Board:     [][]CellState{},
-		Ships:     []ShipState{},
+		SessionID:  sessionID,
+		Status:     PlayerStatusJoined,
+		Board:      [][]CellState{},
+		Ships:      []ShipState{},
 		Eliminated: false,
 	}
 }

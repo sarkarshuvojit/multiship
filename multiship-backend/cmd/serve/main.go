@@ -29,22 +29,31 @@ var (
 	REDIS_PASSWORD = getEnvOrDefault("REDIS_PASSWORD", "localpass")
 	REDIS_USE_TLS  = getEnvOrDefault("REDIS_USE_TLS", "NO")
 	SERVER_PORT    = getEnvOrDefault("PORT", "5000")
+	STATE_BACKEND  = getEnvOrDefault("STATE_BACKEND", "redis")
 )
 
-func setupWebSockets() {
-	wt := api.NewWebsocketAPI()
-	wt.InitHandlers()
-
-	// Add Dependencies
+func newState() state.State {
+	if STATE_BACKEND == "memory" {
+		slog.Warn("Using in-memory state; data is lost on restart")
+		return state.NewInMemState()
+	}
 	db, err := state.NewRedisState(
 		REDIS_URL, DEFAULT_LOGICAL_REDIS_DB,
 		REDIS_PASSWORD, REDIS_USERNAME,
 		REDIS_USE_TLS != "NO",
 	)
 	if err != nil {
-		panic("Cannot connect to redis")
+		panic("Cannot connect to redis (set STATE_BACKEND=memory to run without it)")
 	}
-	wt.AddDependency(utils.Redis, db)
+	return db
+}
+
+func setupWebSockets() {
+	wt := api.NewWebsocketAPI()
+	wt.InitHandlers()
+
+	// Add Dependencies
+	wt.AddDependency(utils.Redis, newState())
 
 	// Add event handlers
 	wt.HandleEvent(events.Signup, handlers.SignupHandler)
@@ -52,6 +61,9 @@ func setupWebSockets() {
 	wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
 	wt.HandleEvent(events.SubmitBoard, handlers.SubmitBoardHandler)
 	wt.HandleEvent(events.TryHit, handlers.TryHitHandler)
+	wt.HandleEvent(events.StartGame, handlers.StartGameHandler)
+	wt.HandleEvent(events.LeaveRoom, handlers.LeaveRoomHandler)
+	wt.OnDisconnect(handlers.DisconnectHook)
 }
 
 func main() {

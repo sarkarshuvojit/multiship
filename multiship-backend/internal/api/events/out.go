@@ -17,4 +17,6 @@ const (
 	ShipSunk                           = "SHIP_SUNK"
 	PlayerEliminated                   = "PLAYER_ELIMINATED"
 	GameOver                           = "GAME_OVER"
+	RoomStateUpdated                   = "ROOM_STATE"
+	RoomLeft                           = "ROOM_LEFT"
 )

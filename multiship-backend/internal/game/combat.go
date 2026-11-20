@@ -110,3 +110,57 @@ func NextActivePlayer(current string, order []string, players map[string]PlayerS
 	}
 	return "", false
 }
+
+// ShipsRemaining counts ships that still have at least one un-hit cell.
+func ShipsRemaining(ships []ShipState, board [][]CellState) int {
+	if len(board) == 0 {
+		return len(ships)
+	}
+	remaining := 0
+	for _, ship := range ships {
+		if !IsShipSunk(ship, board) {
+			remaining++
+		}
+	}
+	return remaining
+}
+
+// SunkShips returns the ships that have been fully destroyed.
+func SunkShips(ships []ShipState, board [][]CellState) []ShipState {
+	sunk := []ShipState{}
+	if len(board) == 0 {
+		return sunk
+	}
+	for _, ship := range ships {
+		if IsShipSunk(ship, board) {
+			sunk = append(sunk, ship)
+		}
+	}
+	return sunk
+}
+
+// ResolveTurn decides what happens after a turn-affecting change (a shot or a
+// player leaving). If one or zero players remain the game is finished and the
+// winner recorded; otherwise the turn passes to the next active player.
+func ResolveTurn(room *RoomState) (gameOver bool) {
+	active := []string{}
+	for _, id := range room.PlayerSessions {
+		if player, ok := room.Players[id]; ok && !player.Eliminated {
+			active = append(active, id)
+		}
+	}
+
+	if len(active) <= 1 {
+		room.Status = RoomStatusFinished
+		room.CurrentPlayer = ""
+		if len(active) == 1 {
+			room.WinnerID = active[0]
+		}
+		return true
+	}
+
+	if next, ok := NextActivePlayer(room.CurrentPlayer, room.PlayerSessions, room.Players); ok {
+		room.CurrentPlayer = next
+	}
+	return false
+}

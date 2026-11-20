@@ -65,3 +65,47 @@ func TestNextActivePlayer(t *testing.T) {
 		t.Errorf("expected first player to be a, got %s", first)
 	}
 }
+
+func TestValidateBoardRejectsNegativeCoordinates(t *testing.T) {
+	ships := []ShipState{
+		{X: -1, Y: 0, Dir: Horizontal, Len: 4},
+		{X: 0, Y: 2, Dir: Horizontal, Len: 3},
+		{X: 0, Y: 4, Dir: Horizontal, Len: 3},
+		{X: 0, Y: 6, Dir: Horizontal, Len: 2},
+		{X: 3, Y: 6, Dir: Horizontal, Len: 2},
+		{X: 6, Y: 6, Dir: Horizontal, Len: 2},
+		{X: 0, Y: 8, Dir: Horizontal, Len: 1},
+		{X: 2, Y: 8, Dir: Horizontal, Len: 1},
+		{X: 4, Y: 8, Dir: Horizontal, Len: 1},
+		{X: 6, Y: 8, Dir: Horizontal, Len: 1},
+	}
+	if ValidateBoard(ships) {
+		t.Fatal("board with negative x should be invalid")
+	}
+	ships[0] = ShipState{X: 0, Y: 12, Dir: Horizontal, Len: 4}
+	if ValidateBoard(ships) {
+		t.Fatal("board with y out of range should be invalid")
+	}
+}
+
+func TestResolveTurnDeclaresWinner(t *testing.T) {
+	room := &RoomState{
+		Status:         RoomStatusOngoing,
+		PlayerSessions: []string{"a", "b", "c"},
+		CurrentPlayer:  "a",
+		Players: map[string]PlayerState{
+			"a": {SessionID: "a"},
+			"b": {SessionID: "b", Eliminated: true},
+			"c": {SessionID: "c"},
+		},
+	}
+	if ResolveTurn(room) || room.CurrentPlayer != "c" {
+		t.Fatalf("expected turn to pass to c, got %q", room.CurrentPlayer)
+	}
+	p := room.Players["a"]
+	p.Eliminated = true
+	room.Players["a"] = p
+	if !ResolveTurn(room) || room.WinnerID != "c" || room.Status != RoomStatusFinished {
+		t.Fatalf("expected c to win, got %+v", room)
+	}
+}

@@ -76,9 +76,19 @@ func AssertTryHit(t *testing.T, c *TestClient, roomID string, targetSessionID st
 	})
 	assert.NoError(t, err)
 
-	msg, err := c.WaitForMessage(events.HitSuccessful, 5*time.Second)
-	assert.NoError(t, err)
-	return msg
+	// Every player in the room receives every HIT_ATTEMPTED, so match this exact shot.
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		msg, err := c.WaitForMessage(events.HitSuccessful, time.Until(deadline))
+		if !assert.NoError(t, err) {
+			return nil
+		}
+		data, ok := msg.Payload.(map[string]any)
+		if ok && data["targetSessionId"] == targetSessionID &&
+			int(data["x"].(float64)) == x && int(data["y"].(float64)) == y {
+			return msg
+		}
+	}
 }
 
 func AssertGeneralError(t *testing.T, c *TestClient) *events.OutboundEvent {

@@ -8,7 +8,9 @@ type ResponseDto[T any] struct {
 }
 
 type SignupDto struct {
-	Email string `json:"email"`
+	Email  string `json:"email"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
 }
 
 type SignupResDto struct {
@@ -22,4 +24,8 @@ type JoinRoomDto struct {
 type SubmitBoardDto struct {
 	RoomID string           `json:"roomId"`
 	Ships  []game.ShipState `json:"ships"`
+}
+
+type RoomIDDto struct {
+	RoomID string `json:"roomId"`
 }

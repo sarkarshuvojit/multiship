@@ -12,6 +12,7 @@ import (
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/dto"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/repo"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/roomlock"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
 	"github.com/sarkarshuvojit/multiship-backend/internal/game"
@@ -47,6 +48,9 @@ func TryHitHandler(
 	if !game.InBounds(payload.X, payload.Y) {
 		return events.InvalidCoordinatesErr
 	}
+
+	unlock := roomlock.Lock(payload.RoomID)
+	defer unlock()
 
 	room, err := repo.GetRoomByID(db, payload.RoomID)
 	if err != nil {
@@ -94,61 +98,22 @@ func TryHitHandler(
 	if isHit {
 		resultState = game.CellStateHit
 	}
-
 	game.SetCell(targetPlayer.Board, payload.X, payload.Y, resultState)
+
+	shipSunk := isHit && game.IsShipSunk(ship, targetPlayer.Board)
+	eliminated := game.AreAllShipsSunk(targetPlayer.Ships, targetPlayer.Board)
+	if eliminated {
+		targetPlayer.Eliminated = true
+	}
 	room.Players[payload.TargetSessionID] = targetPlayer
 
-	shipSunk := false
-	if isHit && game.IsShipSunk(ship, targetPlayer.Board) {
-		shipSunk = true
-	}
-
-	if shipSunk {
-		ws.SendToAll(ctx, events.ShipSunk, dto.ShipSunkPayload{
-			RoomID:          room.RoomID,
-			TargetSessionID: payload.TargetSessionID,
-			Ship:            ship,
-		})
-	}
-
-	if game.AreAllShipsSunk(targetPlayer.Ships, targetPlayer.Board) {
-		targetPlayer.Eliminated = true
-		room.Players[payload.TargetSessionID] = targetPlayer
-		ws.SendToAll(ctx, events.PlayerEliminated, dto.PlayerEliminatedPayload{
-			RoomID:    room.RoomID,
-			SessionID: payload.TargetSessionID,
-		})
-	}
-
-	activePlayers := 0
-	winnerID := ""
-	for _, id := range room.PlayerSessions {
-		player, ok := room.Players[id]
-		if !ok {
-			continue
-		}
-		if !player.Eliminated {
-			activePlayers++
-			winnerID = id
-		}
-	}
-
-	gameOver := activePlayers <= 1
-	if gameOver {
-		room.CurrentPlayer = ""
-	} else {
-		nextPlayer, ok := game.NextActivePlayer(room.CurrentPlayer, room.PlayerSessions, room.Players)
-		if !ok {
-			return events.TurnNotInitializedErr
-		}
-		room.CurrentPlayer = nextPlayer
-	}
+	gameOver := game.ResolveTurn(room)
 
 	if err := repo.UpdateRoom(db, room); err != nil {
 		return err
 	}
 
-	ws.SendToAll(ctx, events.HitSuccessful, dto.HitAttemptedPayload{
+	ws.SendToRoom(room, events.HitSuccessful, dto.HitAttemptedPayload{
 		RoomID:            room.RoomID,
 		AttackerSessionID: sessionID.(string),
 		TargetSessionID:   payload.TargetSessionID,
@@ -156,28 +121,43 @@ func TryHitHandler(
 		Y:                 payload.Y,
 		Result:            resultState,
 	})
-	ws.SendToAll(ctx, events.BoardUpdated, dto.BoardUpdatedPayload{
+	ws.SendToRoom(room, events.BoardUpdated, dto.BoardUpdatedPayload{
 		RoomID:          room.RoomID,
 		TargetSessionID: payload.TargetSessionID,
 		X:               payload.X,
 		Y:               payload.Y,
 		State:           resultState,
 	})
+	if shipSunk {
+		ws.SendToRoom(room, events.ShipSunk, dto.ShipSunkPayload{
+			RoomID:          room.RoomID,
+			TargetSessionID: payload.TargetSessionID,
+			Ship:            ship,
+		})
+	}
+	if eliminated {
+		ws.SendToRoom(room, events.PlayerEliminated, dto.PlayerEliminatedPayload{
+			RoomID:    room.RoomID,
+			SessionID: payload.TargetSessionID,
+		})
+	}
+
+	ws.BroadcastRoomState(room)
+
+	slog.Info("Hit attempted", "roomID", room.RoomID, "attacker", sessionID, "target", payload.TargetSessionID, "result", resultState)
 
 	if gameOver {
-		ws.SendToAll(ctx, events.GameOver, dto.GameOverPayload{
+		ws.SendToRoom(room, events.GameOver, dto.GameOverPayload{
 			RoomID:   room.RoomID,
-			WinnerID: winnerID,
+			WinnerID: room.WinnerID,
 		})
 		return nil
 	}
 
-	ws.SendToAll(ctx, events.NextTurn, dto.NextTurnPayload{
+	ws.SendToRoom(room, events.NextTurn, dto.NextTurnPayload{
 		RoomID:          room.RoomID,
 		CurrentPlayerID: room.CurrentPlayer,
 	})
-
-	slog.Info("Hit attempted", "roomID", room.RoomID, "attacker", sessionID, "target", payload.TargetSessionID, "result", resultState)
 	return nil
 }
 

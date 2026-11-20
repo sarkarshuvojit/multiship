@@ -89,8 +89,12 @@ func TestCompleteGameSimulation(t *testing.T) {
 
 	msg, err := setup.c1.WaitForMessage(events.GameOver, 10*time.Second)
 	assert.NoError(t, err)
-	payload := msg.Payload.(map[string]any)
-	data := payload["payload"].(map[string]any)
+	data := msg.Payload.(map[string]any)
 	winner := data["winnerId"].(string)
 	assert.Equal(t, setup.s1, winner)
+
+	room, err := repo.GetRoomByID(MockDB, setup.roomID)
+	assert.NoError(t, err)
+	assert.Equal(t, game.RoomStatusFinished, room.Status)
+	assert.Equal(t, setup.s1, room.WinnerID)
 }

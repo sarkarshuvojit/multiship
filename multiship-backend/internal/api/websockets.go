@@ -6,13 +6,16 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/olahol/melody"
+	"github.com/sarkarshuvojit/multiship-backend/internal/api/dto"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/repo"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/utils"
+	"github.com/sarkarshuvojit/multiship-backend/internal/game"
 )
 
 type EventHandler = func(context.Context, events.InboundEvent) error
@@ -21,6 +24,8 @@ type WebsocketAPI struct {
 	m      *melody.Melody
 	routes map[events.InboundEventType]EventHandler
 	deps   map[utils.ContextKey]any
+
+	disconnectHooks []func(context.Context)
 }
 
 func NewWebsocketAPI() *WebsocketAPI {
@@ -117,6 +122,37 @@ func (ws WebsocketAPI) SendToAll(
 	ws.m.Broadcast(respBytes)
 }
 
+// SendToSessions broadcasts an event only to the given session IDs.
+func (ws WebsocketAPI) SendToSessions(
+	eventType events.OutboundEventType,
+	payload any,
+	sessionIDs []string,
+) {
+	r := events.OutboundEvent{
+		EventType: eventType,
+		Payload:   payload,
+	}
+	respBytes, _ := json.Marshal(r)
+	ws.m.BroadcastFilter(respBytes, func(s *melody.Session) bool {
+		id, ok := s.Get("sessionID")
+		return ok && slices.Contains(sessionIDs, id.(string))
+	})
+}
+
+// SendToRoom broadcasts an event to every player currently in the room.
+func (ws WebsocketAPI) SendToRoom(
+	room *game.RoomState,
+	eventType events.OutboundEventType,
+	payload any,
+) {
+	ws.SendToSessions(eventType, payload, room.PlayerSessions)
+}
+
+// OnDisconnect registers a callback run after a session disconnects.
+func (ws *WebsocketAPI) OnDisconnect(fn func(context.Context)) {
+	ws.disconnectHooks = append(ws.disconnectHooks, fn)
+}
+
 func createSessionID(s *melody.Session) string {
 	newUUID, _ := uuid.NewUUID()
 	sessionID := newUUID.String()
@@ -184,6 +220,9 @@ func (ws *WebsocketAPI) initDisconnectHandler() error {
 			return
 		}
 		slog.Debug("Known user disconnected", "sessionID", sessionID)
+		for _, hook := range ws.disconnectHooks {
+			hook(ctx)
+		}
 		db := utils.FromContext[state.State](
 			ctx, utils.Redis,
 		)
@@ -240,4 +279,9 @@ func (ws *WebsocketAPI) InitHandlers() error {
 		ws.initConnectHandler(),
 		ws.initEventHandler(),
 	)
+}
+
+// BroadcastRoomState pushes the public room snapshot to everyone in the room.
+func (ws WebsocketAPI) BroadcastRoomState(room *game.RoomState) {
+	ws.SendToRoom(room, events.RoomStateUpdated, dto.NewRoomView(room, game.MaxPlayers))
 }

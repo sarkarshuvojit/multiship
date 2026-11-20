@@ -39,7 +39,9 @@ func SignupHandler(
 	}
 
 	signupVal := utils.QuickMarshal(map[string]string{
-		"email": payload.Email,
+		"email":  payload.Email,
+		"name":   payload.Name,
+		"avatar": payload.Avatar,
 	})
 	db.Set(state.SessionKey(sessionID.(string)), signupVal)
 
