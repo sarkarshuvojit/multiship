@@ -12,7 +12,9 @@ export interface BoardSetupPageProps {
   onShipPlace?: (x: number, y: number) => void;
   onRotate?: () => void;
   onReset?: () => void;
+  onRandomize?: () => void;
   onReady?: () => void;
+  statusText?: string;
   isReady?: boolean;
   timeRemaining?: string;
 }
@@ -25,7 +27,9 @@ export function BoardSetupPage({
   onShipPlace,
   onRotate,
   onReset,
+  onRandomize,
   onReady,
+  statusText,
   isReady = false,
   timeRemaining,
 }: BoardSetupPageProps) {
@@ -37,7 +41,7 @@ export function BoardSetupPage({
         <RetroCard title="Board Setup" variant="highlight">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-sm text-gray-300">Deploy your fleet before the timer expires.</p>
+              <p className="text-sm text-gray-300">{statusText ?? 'Deploy your fleet before the timer expires.'}</p>
               <div className="mt-2 flex items-center gap-3">
                 <RetroBadge label={allPlaced ? 'Fleet Ready' : 'Placing Ships'} variant={allPlaced ? 'success' : 'warning'} />
                 {timeRemaining && <RetroBadge label={`Timer ${timeRemaining}`} variant="info" />}
@@ -57,6 +61,7 @@ export function BoardSetupPage({
           onShipPlace={onShipPlace}
           onRotate={onRotate}
           onReset={onReset}
+          onRandomize={onRandomize}
         />
 
         <RetroCard title="Deployment Tips">

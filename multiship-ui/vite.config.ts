@@ -2,7 +2,7 @@
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 
 // https://vite.dev/config/
 import { fileURLToPath } from 'node:url';
@@ -11,6 +11,7 @@ import { playwright } from '@vitest/browser-playwright';
 const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
+// vitest bundles a newer vite, so its `test` typings don't line up with ours.
 export default defineConfig({
   base: "/multiship/",
   plugins: [react(), tailwindcss()],
@@ -42,4 +43,4 @@ export default defineConfig({
       }
     }]
   }
-});
+} as UserConfig);

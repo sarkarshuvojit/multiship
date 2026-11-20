@@ -27,7 +27,7 @@ export function RetroPlayerCard({
         isCurrentTurn && 'border-[#39FF14] shadow-[6px_6px_0px_0px_rgba(57,255,20,1)]'
       )}
     >
-      <RetroAvatar src={avatar} alt={name} size="md" />
+      <RetroAvatar fallback={avatar} alt={name} size="md" />
       <div className="flex-1">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-lg font-bold uppercase tracking-wider">

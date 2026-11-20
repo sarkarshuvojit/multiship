@@ -21,6 +21,7 @@ export interface RetroShipPlacementGridProps {
   onShipPlace?: (x: number, y: number) => void;
   onRotate?: () => void;
   onReset?: () => void;
+  onRandomize?: () => void;
   className?: string;
   title?: string;
 }
@@ -33,6 +34,7 @@ export function RetroShipPlacementGrid({
   onShipPlace,
   onRotate,
   onReset,
+  onRandomize,
   className,
   title = 'Deploy Fleet',
 }: RetroShipPlacementGridProps) {
@@ -68,11 +70,16 @@ export function RetroShipPlacementGrid({
           <RetroButton variant="danger" onClick={onReset}>
             Reset
           </RetroButton>
+          {onRandomize && (
+            <RetroButton variant="ghost" onClick={onRandomize} className="col-span-2">
+              Random Fleet
+            </RetroButton>
+          )}
         </div>
 
         <div className="mt-4 text-xs text-gray-300 leading-relaxed">
           <p className="font-bold text-[#00FFFF] uppercase">Instructions</p>
-          <p>Select a ship, then click the grid to place it. Rotate to change orientation.</p>
+          <p>Select a ship, then click the grid to place it. Rotate to change orientation. Click a placed ship to pick it back up.</p>
         </div>
       </RetroCard>
     </div>

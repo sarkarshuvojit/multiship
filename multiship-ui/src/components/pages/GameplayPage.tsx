@@ -11,6 +11,7 @@ import type { CellState } from '@/components/game/RetroGridCell';
 export interface OpponentBoard {
   id: string;
   name: string;
+  avatar?: string;
   cells: CellState[][];
   shipsRemaining: number;
   isEliminated?: boolean;
@@ -29,7 +30,9 @@ export interface GameplayPageProps {
   onOpponentSelect?: (id: string) => void;
   onAttack?: (x: number, y: number) => void;
   currentTurn: string;
+  currentTurnId?: string;
   isMyTurn?: boolean;
+  isSpectating?: boolean;
   gameLog: GameLogEvent[];
   myStatus: PlayerStatus;
 }
@@ -41,7 +44,9 @@ export function GameplayPage({
   onOpponentSelect,
   onAttack,
   currentTurn,
+  currentTurnId,
   isMyTurn = false,
+  isSpectating = false,
   gameLog,
   myStatus,
 }: GameplayPageProps) {
@@ -50,7 +55,10 @@ export function GameplayPage({
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white px-6 py-10">
       <div className="max-w-6xl mx-auto space-y-6">
-        <RetroTurnIndicator currentPlayer={currentTurn} isMyTurn={isMyTurn} timeRemaining="00:22" />
+        <RetroTurnIndicator currentPlayer={currentTurn} isMyTurn={isMyTurn} />
+        {isSpectating && (
+          <RetroBadge label="Your fleet is sunk — spectating" variant="error" />
+        )}
 
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-6">
@@ -63,7 +71,7 @@ export function GameplayPage({
                     size="sm"
                     onClick={() => onOpponentSelect?.(opponent.id)}
                   >
-                    {opponent.name}
+                    {opponent.isEliminated ? `☠ ${opponent.name}` : opponent.name}
                   </RetroButton>
                 ))}
               </div>
@@ -97,8 +105,9 @@ export function GameplayPage({
                   <RetroPlayerCard
                     key={opponent.id}
                     name={opponent.name}
+                    avatar={opponent.avatar}
                     shipsRemaining={opponent.shipsRemaining}
-                    isCurrentTurn={currentTurn === opponent.name}
+                    isCurrentTurn={currentTurnId ? currentTurnId === opponent.id : currentTurn === opponent.name}
                     isEliminated={opponent.isEliminated}
                   />
                 ))}

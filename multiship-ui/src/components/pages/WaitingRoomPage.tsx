@@ -16,6 +16,8 @@ export interface WaitingRoomPageProps {
   players: WaitingRoomPlayer[];
   maxPlayers: number;
   isHost?: boolean;
+  canStart?: boolean;
+  hint?: string;
   onStartGame?: () => void;
   onLeave?: () => void;
   onCopyCode?: () => void;
@@ -26,6 +28,8 @@ export function WaitingRoomPage({
   players,
   maxPlayers,
   isHost = false,
+  canStart,
+  hint,
   onStartGame,
   onLeave,
   onCopyCode,
@@ -58,7 +62,7 @@ export function WaitingRoomPage({
                 key={player.id}
                 className="flex items-center gap-3 border-2 border-[#333] p-3 bg-[#111]"
               >
-                <RetroAvatar src={player.avatar} alt={player.name} size="sm" />
+                <RetroAvatar fallback={player.avatar} alt={player.name} size="sm" />
                 <div className="flex-1">
                   <p className="font-bold uppercase text-sm">{player.name}</p>
                   <div className="flex gap-2 mt-1">
@@ -81,7 +85,8 @@ export function WaitingRoomPage({
           <RetroButton variant="ghost" onClick={onLeave}>
             Leave Room
           </RetroButton>
-          <RetroButton onClick={onStartGame} disabled={!isHost}>
+          {hint && <p className="text-xs text-gray-400 self-center">{hint}</p>}
+          <RetroButton onClick={onStartGame} disabled={!isHost || canStart === false}>
             {isHost ? 'Launch Battle' : 'Waiting for Host'}
           </RetroButton>
         </div>

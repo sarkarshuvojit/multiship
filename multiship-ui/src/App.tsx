@@ -1,6 +1,6 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import './App.css'
-import AuthScreen from './components/auth.screen';
+import MultishipGame from './components/multiship-game';
 import BattleshipGenerator from './components/battleship-testcase-generator';
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
     <>
       <HashRouter>
         <Routes>
-          <Route path="/" element={<AuthScreen />} />
+          <Route path="/" element={<MultishipGame />} />
           <Route path="/debugging/tcgen" element={<BattleshipGenerator />} />
         </Routes>
       </HashRouter>
