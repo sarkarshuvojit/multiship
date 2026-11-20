@@ -40,7 +40,7 @@ func TestRoomRejectsFourthPlayer(t *testing.T) {
 	var roomCode string
 
 	t.Run("Client1_SignupAndCreateRoom", func(t *testing.T) {
-		AssertSignup(t, c1, email1)
+		_ = AssertSignup(t, c1, email1)
 		msg := AssertCreateRoom(t, c1)
 
 		data := msg.Payload.(map[string]any)
@@ -50,12 +50,12 @@ func TestRoomRejectsFourthPlayer(t *testing.T) {
 	})
 
 	t.Run("Client2_SignupAndJoinRoom", func(t *testing.T) {
-		AssertSignup(t, c2, email2)
+		_ = AssertSignup(t, c2, email2)
 		AssertJoinRoom(t, c2, roomCode)
 	})
 
 	t.Run("Client3_SignupAndJoinRoom", func(t *testing.T) {
-		AssertSignup(t, c3, email3)
+		_ = AssertSignup(t, c3, email3)
 		AssertJoinRoom(t, c3, roomCode)
 		time.Sleep(100 * time.Millisecond)
 
@@ -73,7 +73,7 @@ func TestRoomRejectsFourthPlayer(t *testing.T) {
 	})
 
 	t.Run("Client4_SignupAndAttemptJoinRoom_Fails", func(t *testing.T) {
-		AssertSignup(t, c4, email4)
+		_ = AssertSignup(t, c4, email4)
 
 		// Attempt to join full room
 		err := c4.SendMessage(events.JoinRoom, map[string]any{

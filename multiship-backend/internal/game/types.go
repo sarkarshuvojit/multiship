@@ -45,6 +45,7 @@ type PlayerState struct {
 	Status    PlayerStatus  `json:"status"`
 	Board     [][]CellState `json:"board"`
 	Ships     []ShipState   `json:"ships"`
+	Eliminated bool         `json:"eliminated"`
 }
 
 func NewPlayer(sessionID string) *PlayerState {
@@ -53,5 +54,6 @@ func NewPlayer(sessionID string) *PlayerState {
 		Status:    PlayerStatusJoined,
 		Board:     [][]CellState{},
 		Ships:     []ShipState{},
+		Eliminated: false,
 	}
 }

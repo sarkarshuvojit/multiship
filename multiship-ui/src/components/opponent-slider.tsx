@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Button } from "@/components/retroui/Button"
 import GameGrid from "./game-grid"
 
 interface OpponentSliderProps {
@@ -32,34 +33,40 @@ export default function OpponentSlider({
 
       <div className="relative w-full max-w-md">
         {/* Navigation buttons */}
-        <button
+        <Button
           onClick={prevOpponent}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
+          variant="outline"
+          size="icon"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 rounded-full bg-white hover:bg-gray-100"
           aria-label="Previous opponent"
         >
           <ChevronLeft className="h-6 w-6 text-gray-600" />
-        </button>
+        </Button>
 
         <div className="w-full aspect-square">
           <GameGrid board={opponentBoards[currentOpponent]} />
         </div>
 
-        <button
+        <Button
           onClick={nextOpponent}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
+          variant="outline"
+          size="icon"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 rounded-full bg-white hover:bg-gray-100"
           aria-label="Next opponent"
         >
           <ChevronRight className="h-6 w-6 text-gray-600" />
-        </button>
+        </Button>
       </div>
 
       {/* Slider indicators */}
       <div className="flex gap-2 mt-4">
         {opponents.map((_, index) => (
-          <button
+          <Button
             key={index}
             onClick={() => setCurrentOpponent(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            variant="ghost"
+            size="icon"
+            className={`h-2 w-2 rounded-full p-0 transition-all duration-300 ${
               index === currentOpponent
                 ? "w-6 bg-gradient-to-r from-purple-500 to-pink-500"
                 : "bg-gray-300 hover:bg-gray-400"

@@ -1,3 +1,4 @@
+import { Badge } from '@/components/retroui/Badge';
 import { cn } from '@/lib/utils';
 
 export interface RetroBadgeProps {
@@ -7,10 +8,10 @@ export interface RetroBadgeProps {
 }
 
 const variantStyles = {
-  success: 'bg-[#39FF14] text-black border-black',
-  warning: 'bg-[#FFD700] text-black border-black',
-  error: 'bg-[#FF0000] text-white border-black',
-  info: 'bg-[#00FFFF] text-black border-black',
+  success: 'bg-green-400 text-black',
+  warning: 'bg-yellow-400 text-black',
+  error: 'bg-red-500 text-white',
+  info: 'bg-blue-400 text-black',
 };
 
 export function RetroBadge({
@@ -19,15 +20,16 @@ export function RetroBadge({
   className,
 }: RetroBadgeProps) {
   return (
-    <span
+    <Badge
+      variant="solid"
+      size="sm"
       className={cn(
-        'inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider',
-        'border-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]',
+        'uppercase tracking-wider border-2 border-black shadow-md',
         variantStyles[variant],
         className
       )}
     >
       {label}
-    </span>
+    </Badge>
   );
 }

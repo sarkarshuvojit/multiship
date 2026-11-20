@@ -1,3 +1,4 @@
+import { Avatar } from '@/components/retroui/Avatar';
 import { cn } from '@/lib/utils';
 
 export interface RetroAvatarProps {
@@ -28,26 +29,23 @@ export function RetroAvatar({
   const initials = fallback || alt?.charAt(0).toUpperCase() || '?';
 
   return (
-    <div
+    <Avatar
       onClick={onClick}
       className={cn(
-        'border-4 border-black bg-[#2d2d2d] flex items-center justify-center overflow-hidden',
-        'shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
-        onClick && 'cursor-pointer hover:border-[#00FFFF] transition-colors',
-        selected && 'border-[#39FF14] shadow-[4px_4px_0px_0px_rgba(57,255,20,1)]',
+        'border-2 border-black bg-[#2d2d2d]',
+        onClick && 'cursor-pointer',
+        selected && 'ring-2 ring-green-400',
         sizeStyles[size],
         className
       )}
     >
       {src ? (
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-        />
+        <Avatar.Image src={src} alt={alt} className="w-full h-full object-cover" />
       ) : (
-        <span className="text-[#39FF14] font-bold">{initials}</span>
+        <Avatar.Fallback className="text-[#39FF14] font-bold">
+          {initials}
+        </Avatar.Fallback>
       )}
-    </div>
+    </Avatar>
   );
 }

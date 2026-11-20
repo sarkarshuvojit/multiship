@@ -1,3 +1,4 @@
+import { Button } from '@/components/retroui/Button';
 import { cn } from '@/lib/utils';
 
 export interface RetroModalProps {
@@ -36,12 +37,14 @@ export function RetroModal({
         )}
       >
         {/* Close button */}
-        <button
+        <Button
           onClick={onClose}
-          className="absolute top-2 right-2 text-[#FF0000] hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center border-2 border-current"
+          variant="outline"
+          size="icon"
+          className="absolute top-2 right-2 text-[#FF0000] hover:text-white border-current"
         >
           ×
-        </button>
+        </Button>
 
         {title && (
           <h2 className="text-[#39FF14] text-2xl font-bold uppercase tracking-wider mb-4 pr-8">

@@ -110,10 +110,11 @@ func JoinRoomHandler(
 
 	room.PlayerSessions = append(room.PlayerSessions, sessionID)
 	room.Players[sessionID] = game.PlayerState{
-		SessionID: sessionID,
-		Status:    game.PlayerStatusJoined,
-		Board:     [][]game.CellState{},
-		Ships:     []game.ShipState{},
+		SessionID:  sessionID,
+		Status:     game.PlayerStatusJoined,
+		Board:      [][]game.CellState{},
+		Ships:      []game.ShipState{},
+		Eliminated: false,
 	}
 	if err := repo.UpdateRoom(db, room); err != nil {
 		return err
@@ -187,6 +188,7 @@ func SubmitBoardHandler(
 	player := room.Players[sessionID.(string)]
 	player.Ships = payload.Ships
 	player.Status = game.PlayerStatusBoardReady
+	player.Board = game.NewBoard()
 	room.Players[sessionID.(string)] = player
 
 	if err := repo.UpdateRoom(db, room); err != nil {

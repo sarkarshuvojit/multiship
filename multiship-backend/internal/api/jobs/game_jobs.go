@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/sarkarshuvojit/multiship-backend/internal/api"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/repo"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/state"
@@ -79,12 +80,26 @@ func RecalculateRoomState(
 	}
 
 	room.Status = newStatus
+	if newStatus == game.RoomStatusOngoing && room.CurrentPlayer == "" {
+		if nextPlayer, ok := game.NextActivePlayer("", room.PlayerSessions, room.Players); ok {
+			room.CurrentPlayer = nextPlayer
+		}
+	}
 	if err := repo.UpdateRoom(db, room); err != nil {
 		errCh <- err
 		return
 	}
 
 	slog.Info("Updated room status", "newStatus", room.Status)
+	if room.Status == game.RoomStatusOngoing && room.CurrentPlayer != "" {
+		if wsVal := ctx.Value(utils.WebsocketAPI); wsVal != nil {
+			ws := wsVal.(*api.WebsocketAPI)
+			ws.SendToAll(ctx, events.NextTurn, map[string]any{
+				"roomId":          room.RoomID,
+				"currentPlayerId": room.CurrentPlayer,
+			})
+		}
+	}
 	errCh <- nil
 
 }

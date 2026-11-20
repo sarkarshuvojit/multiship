@@ -51,6 +51,7 @@ func setupWebSockets() {
 	wt.HandleEvent(events.CreateRoom, handlers.CreateRoomHandler)
 	wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
 	wt.HandleEvent(events.SubmitBoard, handlers.SubmitBoardHandler)
+	wt.HandleEvent(events.TryHit, handlers.TryHitHandler)
 }
 
 func main() {

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAppSelector } from '@/app/hooks';
+import { RetroButton } from '@/components/retro-ui/RetroButton';
+import { RetroInput } from '@/components/retro-ui/RetroInput';
 
 export function RoomSelectionComponent(props: {
   selectedAvatar: string,
@@ -20,33 +22,39 @@ export function RoomSelectionComponent(props: {
         </div>
 
         <div className="space-y-4">
-          <button
+          <RetroButton
             onClick={() => alert('Create Battle Room clicked!')}
-            className="w-full bg-red-800 hover:bg-red-700 text-white py-4 rounded-lg font-medium text-lg transition-colors uppercase tracking-wide border border-red-700 hover:border-red-600"
+            size="lg"
+            className="w-full"
           >
             ⚔️ CREATE BATTLE ROOM
-          </button>
+          </RetroButton>
 
-          <button
+          <RetroButton
             onClick={() => alert('Join Battle clicked!')}
-            className="w-full bg-orange-800 hover:bg-orange-700 text-white py-4 rounded-lg font-medium text-lg transition-colors uppercase tracking-wide border border-orange-700 hover:border-orange-600"
+            size="lg"
+            variant="secondary"
+            className="w-full"
           >
             🛡️ JOIN BATTLE
-          </button>
+          </RetroButton>
 
-          <button
+          <RetroButton
             onClick={() => alert('Quick Match clicked!')}
-            className="w-full bg-yellow-800 hover:bg-yellow-700 text-white py-4 rounded-lg font-medium text-lg transition-colors uppercase tracking-wide border border-yellow-700 hover:border-yellow-600"
+            size="lg"
+            variant="danger"
+            className="w-full"
           >
             💀 QUICK MATCH
-          </button>
+          </RetroButton>
 
-          <button
+          <RetroButton
             onClick={props.handleBack}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 py-2 rounded-lg font-medium transition-colors mt-6 uppercase tracking-wide border border-gray-600"
+            variant="ghost"
+            className="w-full mt-6"
           >
             ← RETREAT
-          </button>
+          </RetroButton>
         </div>
       </div>
     </div>
@@ -90,12 +98,11 @@ function SignupComponent(props: {
               <label className="block text-sm font-medium text-gray-300 mb-2 uppercase tracking-wide">
                 Captain's Name
               </label>
-              <input
-                type="text"
+              <RetroInput
                 value={props.username}
-                onChange={(e) => props.setUsername(e.target.value)}
+                onChange={(value) => props.setUsername(value)}
                 placeholder="Enter your warrior name"
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-white placeholder-gray-400"
+                className="bg-gray-800 text-white placeholder:text-gray-400"
               />
             </div>
 
@@ -107,37 +114,38 @@ function SignupComponent(props: {
                 <div className="text-4xl bg-gray-800 border border-red-800 rounded-lg p-3">
                   {props.selectedAvatar}
                 </div>
-                <button
+                <RetroButton
                   onClick={getRandomAvatar}
-                  className="bg-red-800 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors uppercase tracking-wide"
+                  size="sm"
                 >
                   Randomize
-                </button>
+                </RetroButton>
               </div>
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {avatars.map((avatar, index) => (
-                  <button
+                  <RetroButton
                     key={index}
                     onClick={() => props.setSelectedAvatar(avatar)}
-                    className={`text-2xl p-2 rounded-lg border-2 transition-colors ${
-                      props.selectedAvatar === avatar
-                        ? 'border-red-500 bg-red-900'
-                        : 'border-gray-600 bg-gray-800 hover:border-red-700'
+                    size="sm"
+                    variant={props.selectedAvatar === avatar ? 'secondary' : 'ghost'}
+                    className={`text-2xl p-2 ${
+                      props.selectedAvatar === avatar ? 'border-black' : 'border-gray-600 text-gray-200'
                     }`}
                   >
                     {avatar}
-                  </button>
+                  </RetroButton>
                 ))}
               </div>
             </div>
 
-            <button
+            <RetroButton
               onClick={handleContinue}
               disabled={!props.username.trim()}
-              className="w-full bg-red-800 hover:bg-red-700 disabled:bg-gray-700 text-white py-3 rounded-lg font-medium transition-colors uppercase tracking-wider"
+              size="lg"
+              className="w-full"
             >
               ENTER BATTLE
-            </button>
+            </RetroButton>
           </div>
         </div>
       </div>

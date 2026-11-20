@@ -130,6 +130,7 @@ func StartWebsocketServer(db state.State) (func(), chan bool) {
 		wt.HandleEvent(events.CreateRoom, handlers.CreateRoomHandler)
 		wt.HandleEvent(events.JoinRoom, handlers.JoinRoomHandler)
 		wt.HandleEvent(events.SubmitBoard, handlers.SubmitBoardHandler)
+		wt.HandleEvent(events.TryHit, handlers.TryHitHandler)
 
 		ready <- true
 		slog.Error("Http Server Error", "err", http.ListenAndServe(":"+TestServerPort, nil))

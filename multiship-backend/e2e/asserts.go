@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func AssertSignup(t *testing.T, c *TestClient, email string) {
+func AssertSignup(t *testing.T, c *TestClient, email string) string {
 	err := c.SendMessage(events.Signup, map[string]any{
 		"email": email,
 	})
@@ -21,6 +21,10 @@ func AssertSignup(t *testing.T, c *TestClient, email string) {
 	msg, err := c.WaitForMessage(events.SignedUp, 5*time.Second)
 	assert.NoError(t, err)
 	assert.Equal(t, events.SignedUp, msg.EventType)
+	payload := msg.Payload.(map[string]any)
+	data := payload["payload"].(map[string]any)
+	sessionID := data["sessionId"].(string)
+	return sessionID
 }
 
 func AssertCreateRoom(t *testing.T, c *TestClient) *events.OutboundEvent {
@@ -61,6 +65,26 @@ func AssertSubmitBoard(t *testing.T, c *TestClient, roomID string, ships []game.
 
 	_, err = c.WaitForMessage(events.BoardSubmitted, 5*time.Second)
 	assert.NoError(t, err)
+}
+
+func AssertTryHit(t *testing.T, c *TestClient, roomID string, targetSessionID string, x int, y int) *events.OutboundEvent {
+	err := c.SendMessage(events.TryHit, dto.TryHitDto{
+		RoomID:          roomID,
+		TargetSessionID: targetSessionID,
+		X:               x,
+		Y:               y,
+	})
+	assert.NoError(t, err)
+
+	msg, err := c.WaitForMessage(events.HitSuccessful, 5*time.Second)
+	assert.NoError(t, err)
+	return msg
+}
+
+func AssertGeneralError(t *testing.T, c *TestClient) *events.OutboundEvent {
+	msg, err := c.WaitForMessage(events.GeneralError, 5*time.Second)
+	assert.NoError(t, err)
+	return msg
 }
 
 func AssertPlayerStatusCount(
