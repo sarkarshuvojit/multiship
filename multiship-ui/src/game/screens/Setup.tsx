@@ -6,6 +6,7 @@ import { FLEET, canPlace, randomFleet, shipAt, shipCells, type Placements } from
 import { cn } from '@/lib/utils';
 import type { RoomView, ShipDirection, ShipState } from '@/types/multiship.types';
 import { Board } from '../Board';
+import { ShipSprite } from '../ShipSprite';
 import { Avatar, Button, Chip, Panel } from '../ui';
 import { sfx } from '@/lib/sfx';
 
@@ -169,14 +170,12 @@ export function Setup({ room, me }: { room: RoomView; me: string }) {
                       locked && 'cursor-default hover:ring-line',
                     )}
                   >
-                    <span className="flex gap-[2px]">
-                      {Array.from({ length: d.length }, (_, i) => (
-                        <span
-                          key={i}
-                          className={cn('h-2.5 w-2.5 rounded-[3px]', placed || isHeld ? 'bg-ship-edge' : 'bg-white/10')}
-                        />
-                      ))}
-                    </span>
+                    <ShipSprite
+                      length={d.length}
+                      variant={placed || isHeld ? (isHeld ? 'ghost' : 'own') : 'muted'}
+                      className="h-3.5 shrink-0"
+                      style={{ width: d.length * 14 }}
+                    />
                     <span className={cn('truncate', placed ? 'text-slate-300' : 'text-slate-500')}>{d.name}</span>
                   </button>
                 );
