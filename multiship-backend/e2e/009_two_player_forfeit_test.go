@@ -89,4 +89,17 @@ func TestTwoPlayerHostStartAndForfeit(t *testing.T) {
 
 	room = waitForRoomStatus(t, roomID, game.RoomStatusFinished)
 	assert.Equal(t, s1, room.WinnerID)
+
+	// Rematch resets the room; the player who left is not pulled back in.
+	assert.NoError(t, c1.SendMessage(events.Rematch, map[string]any{"roomId": roomID}))
+	room = waitForRoomStatus(t, roomID, game.RoomStatusWaiting)
+	assert.Equal(t, []string{s1}, room.PlayerSessions)
+	assert.Empty(t, room.WinnerID)
+	assert.False(t, room.Players[s1].Eliminated)
+	assert.Equal(t, game.PlayerStatusJoined, room.Players[s1].Status)
+
+	// Rematch is rejected while a game is not finished.
+	assert.NoError(t, c1.SendMessage(events.Rematch, map[string]any{"roomId": roomID}))
+	msg = AssertGeneralError(t, c1)
+	assert.Equal(t, events.GameNotFinishedErr.Error(), msg.Payload.(map[string]any)["msg"])
 }

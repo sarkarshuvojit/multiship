@@ -300,6 +300,72 @@ func LeaveRoomHandler(
 	return nil
 }
 
+// RematchHandler resets a finished room so everyone still in it can play again.
+// Players who already left the finished game are dropped from the room.
+func RematchHandler(
+	ctx context.Context,
+	event events.InboundEvent,
+) error {
+	ws := utils.FromContext[*api.WebsocketAPI](ctx, utils.WebsocketAPI)
+	db := utils.FromContext[state.State](ctx, utils.Redis)
+
+	var payload dto.RoomIDDto
+	if err := json.Unmarshal(event.Payload, &payload); err != nil {
+		return err
+	}
+
+	sessionID, err := authenticatedSession(ctx)
+	if err != nil {
+		return err
+	}
+
+	unlock := roomlock.Lock(payload.RoomID)
+	room, err := repo.GetRoomByID(db, payload.RoomID)
+	if err != nil {
+		unlock()
+		return err
+	}
+	if !slices.Contains(room.PlayerSessions, sessionID) {
+		unlock()
+		return events.NotInRoomErr
+	}
+	if room.Status != game.RoomStatusFinished {
+		unlock()
+		return events.GameNotFinishedErr
+	}
+
+	// The caller is always in; others only if they are still attached to this room.
+	_ = repo.SetSessionRoom(db, sessionID, room.RoomID)
+	kept := []string{}
+	players := map[string]game.PlayerState{}
+	for _, id := range room.PlayerSessions {
+		if current, ok := repo.GetSessionRoom(db, id); !ok || current != room.RoomID {
+			continue
+		}
+		old := room.Players[id]
+		fresh := *game.NewPlayer(id)
+		fresh.Name, fresh.Avatar = old.Name, old.Avatar
+		players[id] = fresh
+		kept = append(kept, id)
+	}
+	room.PlayerSessions = kept
+	room.Players = players
+	room.Status = game.RoomStatusWaiting
+	room.CurrentPlayer = ""
+	room.WinnerID = ""
+	if !slices.Contains(kept, room.LeaderSessionID) {
+		room.LeaderSessionID = sessionID
+	}
+	err = repo.UpdateRoom(db, room)
+	unlock()
+	if err != nil {
+		return err
+	}
+
+	ws.BroadcastRoomState(room)
+	return recomputeRoom(ctx, room.RoomID)
+}
+
 // DisconnectHook removes a disconnected player from their room.
 func DisconnectHook(ctx context.Context) {
 	s := utils.FromContext[*melody.Session](ctx, utils.Session)
@@ -404,3 +470,4 @@ var _ api.EventHandler = JoinRoomHandler
 var _ api.EventHandler = SubmitBoardHandler
 var _ api.EventHandler = StartGameHandler
 var _ api.EventHandler = LeaveRoomHandler
+var _ api.EventHandler = RematchHandler

@@ -133,6 +133,7 @@ func StartWebsocketServer(db state.State) (func(), chan bool) {
 		wt.HandleEvent(events.TryHit, handlers.TryHitHandler)
 		wt.HandleEvent(events.StartGame, handlers.StartGameHandler)
 		wt.HandleEvent(events.LeaveRoom, handlers.LeaveRoomHandler)
+		wt.HandleEvent(events.Rematch, handlers.RematchHandler)
 		wt.OnDisconnect(handlers.DisconnectHook)
 
 		ready <- true

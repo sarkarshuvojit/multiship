@@ -29,4 +29,5 @@ var (
 	NotRoomHostErr        = errors.New("Only the host can start the game")
 	NotEnoughPlayersErr   = errors.New("Need at least 2 players to start")
 	BoardLockedErr        = errors.New("Boards can no longer be changed")
+	GameNotFinishedErr    = errors.New("Game is still in progress")
 )
