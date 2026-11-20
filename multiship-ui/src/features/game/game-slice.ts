@@ -7,7 +7,26 @@ import type {
   ShipState,
   ShipSunkPayload,
 } from '@/types/multiship.types';
-import type { GameLogEvent } from '@/components/layout/RetroGameLog';
+import { loadPrefs } from '@/lib/prefs';
+import { SHIP_NAMES } from '@/game/constants';
+
+export type LogKind = 'hit' | 'miss' | 'turn' | 'system' | 'error' | 'sunk';
+
+export interface GameLogEvent {
+  id: string;
+  message: string;
+  type?: LogKind;
+  timestamp?: string;
+}
+
+export interface LastShot {
+  attackerId: string;
+  targetId: string;
+  x: number;
+  y: number;
+  hit: boolean;
+  seq: number;
+}
 
 export interface GameStats {
   hits: number;
@@ -28,16 +47,19 @@ interface GameSlice {
   log: GameLogEvent[];
   stats: GameStats;
   lastAttackerId: string | null;
+  lastShot: LastShot | null;
   error: string | null;
 }
 
 const emptyStats: GameStats = { hits: 0, misses: 0, shipsSunk: 0 };
 
+const prefs = loadPrefs();
+
 const initialState: GameSlice = {
   connected: false,
   sessionId: null,
-  name: '',
-  avatar: '',
+  name: prefs.name,
+  avatar: prefs.avatar,
   signedUp: false,
   pending: false,
   room: null,
@@ -46,6 +68,7 @@ const initialState: GameSlice = {
   log: [],
   stats: emptyStats,
   lastAttackerId: null,
+  lastShot: null,
   error: null,
 };
 
@@ -70,6 +93,7 @@ function resetRoom(state: GameSlice) {
   state.log = [];
   state.stats = { ...emptyStats };
   state.lastAttackerId = null;
+  state.lastShot = null;
 }
 
 const gameSlice = createSlice({
@@ -85,7 +109,7 @@ const gameSlice = createSlice({
       Object.assign(state, initialState, {
         name: state.name,
         avatar: state.avatar,
-        error: 'Connection lost. Reconnecting...',
+        error: state.connected ? 'Connection lost — reconnecting…' : state.error,
       });
     },
     signupRequested: (state, action: PayloadAction<{ name: string; avatar: string }>) => {
@@ -116,8 +140,10 @@ const gameSlice = createSlice({
       const next = action.payload;
       state.pending = false;
 
-      if (!prev || prev.roomId !== next.roomId) {
+      const rematched = prev?.status === 'FINISHED' && next.status !== 'FINISHED';
+      if (!prev || prev.roomId !== next.roomId || rematched) {
         resetRoom(state);
+        if (rematched) pushLog(state, 'Rematch! Back to the lobby.', 'system');
       }
       if (prev && prev.roomId === next.roomId) {
         if (prev.status !== 'BOARD_SELECTION' && next.status === 'BOARD_SELECTION') {
@@ -158,6 +184,14 @@ const gameSlice = createSlice({
       const p = action.payload;
       const hit = p.result === 'HIT';
       state.lastAttackerId = p.attackerSessionId;
+      state.lastShot = {
+        attackerId: p.attackerSessionId,
+        targetId: p.targetSessionId,
+        x: p.x,
+        y: p.y,
+        hit,
+        seq: (state.lastShot?.seq ?? 0) + 1,
+      };
       if (p.attackerSessionId === state.sessionId) {
         if (hit) state.stats.hits++;
         else state.stats.misses++;
@@ -172,7 +206,8 @@ const gameSlice = createSlice({
       const p = action.payload;
       if (state.lastAttackerId === state.sessionId) state.stats.shipsSunk++;
       const owner = p.targetSessionId === state.sessionId ? 'Your' : `${nameOf(state, p.targetSessionId)}'s`;
-      pushLog(state, `${owner} ${p.ship.length}-cell ship was sunk!`, 'sunk');
+      const ship = SHIP_NAMES[p.ship.length] ?? 'ship';
+      pushLog(state, p.targetSessionId === state.sessionId ? `Your ${ship} was sunk!` : `${owner} ${ship} sunk!`, 'sunk');
     },
     playerEliminated: (state, action: PayloadAction<PlayerEliminatedPayload>) => {
       const id = action.payload.sessionId;

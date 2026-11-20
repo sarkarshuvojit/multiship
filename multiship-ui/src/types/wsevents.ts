@@ -6,6 +6,7 @@ export enum InboundEventType {
   TRY_HIT = 'TRY_HIT',
   START_GAME = 'START_GAME',
   LEAVE_ROOM = 'LEAVE_ROOM',
+  REMATCH = 'REMATCH',
 }
 
 export enum OutboundEventType {

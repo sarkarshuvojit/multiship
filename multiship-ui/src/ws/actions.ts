@@ -21,6 +21,8 @@ export const START_GAME = (roomId: string) =>
   wsSend({ eventType: InboundEventType.START_GAME, payload: { roomId } });
 export const LEAVE_ROOM = () =>
   wsSend({ eventType: InboundEventType.LEAVE_ROOM, payload: {} });
+export const REMATCH = (roomId: string) =>
+  wsSend({ eventType: InboundEventType.REMATCH, payload: { roomId } });
 export const SUBMIT_BOARD = (payload: SubmitBoardDto) =>
   wsSend({ eventType: InboundEventType.SUBMIT_BOARD, payload });
 export const TRY_HIT = (payload: TryHitDto) =>
