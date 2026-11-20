@@ -1,37 +1,30 @@
 import { Fragment, useState, type MouseEvent } from 'react';
 import { cn } from '@/lib/utils';
-import { shipCells } from '@/lib/fleet';
+import { ShipSprite } from './ShipSprite';
 import type { ServerCellState, ShipState } from '@/types/multiship.types';
 
 const COLS = 'ABCDEFGHIJ';
 const N = 10;
 
-type Seg = { dir: 'H' | 'V'; first: boolean; last: boolean };
-
-function segmentMap(ships: ShipState[] | undefined): Map<string, Seg> {
-  const map = new Map<string, Seg>();
-  ships?.forEach((ship) =>
-    shipCells(ship).forEach(([x, y], i) =>
-      map.set(`${x},${y}`, {
-        dir: ship.direction === 'HORIZONTAL' ? 'H' : 'V',
-        first: i === 0,
-        last: i === ship.length - 1,
-      }),
-    ),
-  );
-  return map;
+function shipKey(s: ShipState) {
+  return `${s.x},${s.y},${s.direction},${s.length}`;
 }
 
-function hullRadius(seg: Seg) {
-  if (seg.first && seg.last) return 'rounded-[35%]';
-  if (seg.dir === 'H') return cn(seg.first && 'rounded-l-[45%]', seg.last && 'rounded-r-[45%]');
-  return cn(seg.first && 'rounded-t-[45%]', seg.last && 'rounded-b-[45%]');
+/** Recover a ship from a straight run of preview cells. */
+function shipFromCells(cells: [number, number][]): ShipState | null {
+  if (!cells.length) return null;
+  const xs = cells.map((c) => c[0]);
+  const ys = cells.map((c) => c[1]);
+  const horizontal = cells.length > 1 && new Set(ys).size === 1;
+  return { x: Math.min(...xs), y: Math.min(...ys), direction: horizontal ? 'HORIZONTAL' : 'VERTICAL', length: cells.length };
 }
 
-function hullInset(seg: Seg) {
-  // Hull segments touch each other along the ship's axis for a continuous look.
-  if (seg.dir === 'H') return cn('inset-y-[14%]', seg.first ? 'left-[12%]' : 'left-0', seg.last ? 'right-[12%]' : 'right-0');
-  return cn('inset-x-[14%]', seg.first ? 'top-[12%]' : 'top-0', seg.last ? 'bottom-[12%]' : 'bottom-0');
+function gridArea(s: ShipState) {
+  const h = s.direction === 'HORIZONTAL';
+  return {
+    gridColumn: `${s.x + 2} / span ${h ? s.length : 1}`,
+    gridRow: `${s.y + 2} / span ${h ? 1 : s.length}`,
+  };
 }
 
 export interface BoardProps {
@@ -71,8 +64,9 @@ export function Board({
   onRotate,
 }: BoardProps) {
   const [hover, setHover] = useState<[number, number] | null>(null);
-  const shipSegs = segmentMap(ships);
-  const sunkSegs = segmentMap(sunkShips);
+  const sunkKeys = new Set(sunkShips?.map(shipKey));
+  const afloat = ships?.filter((s) => !sunkKeys.has(shipKey(s))) ?? [];
+  const previewShip = preview ? shipFromCells(preview.cells) : null;
   const previewSet = new Set(preview?.cells.map(([x, y]) => `${x},${y}`));
 
   const setHoverCell = (cell: [number, number] | null) => {
@@ -106,6 +100,7 @@ export function Board({
         {COLS.split('').map((c, x) => (
           <span
             key={c}
+            style={{ gridColumn: x + 2, gridRow: 1 }}
             className={cn(
               'pb-1 text-center font-mono text-[10px] text-slate-500 transition-colors',
               hover?.[0] === x && (targetable || editable) && 'text-accent',
@@ -118,6 +113,7 @@ export function Board({
         {Array.from({ length: N }, (_, y) => (
           <Fragment key={y}>
             <span
+              style={{ gridColumn: 1, gridRow: y + 2 }}
               className={cn(
                 'flex items-center justify-end pr-1 font-mono text-[10px] text-slate-500 transition-colors',
                 hover?.[1] === y && (targetable || editable) && 'text-accent',
@@ -128,8 +124,6 @@ export function Board({
             {Array.from({ length: N }, (_, x) => {
               const key = `${x},${y}`;
               const shot = shots?.[y]?.[x] ?? 'HIDDEN';
-              const seg = shipSegs.get(key);
-              const sunk = sunkSegs.get(key);
               const inPreview = previewSet.has(key);
               const isLast = lastShot && lastShot.x === x && lastShot.y === y;
               const open = shot === 'HIDDEN';
@@ -143,6 +137,7 @@ export function Board({
                   tabIndex={clickable ? 0 : -1}
                   aria-label={`${COLS[x]}${y + 1}${shot === 'HIT' ? ' hit' : shot === 'MISS' ? ' miss' : ''}`}
                   disabled={!clickable}
+                  style={{ gridColumn: x + 2, gridRow: y + 2 }}
                   onMouseEnter={() => setHoverCell([x, y])}
                   onFocus={() => setHoverCell([x, y])}
                   onClick={() => clickable && onCellClick?.(x, y)}
@@ -155,38 +150,24 @@ export function Board({
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                   )}
                 >
-                  {/* Ship hull (own fleet or revealed sunk ship) */}
-                  {(seg || sunk) && (
-                    <span
-                      className={cn(
-                        'absolute',
-                        hullInset((seg ?? sunk)!),
-                        hullRadius((seg ?? sunk)!),
-                        sunk
-                          ? 'bg-hit-strong/25 ring-1 ring-hit/60'
-                          : 'bg-gradient-to-b from-ship-edge to-ship shadow-[inset_0_1px_0_rgb(255_255_255/0.2)]',
-                      )}
-                    />
-                  )}
-
                   {/* Placement preview */}
                   {inPreview && (
                     <span
                       className={cn(
-                        'absolute inset-[10%] rounded-[30%] ring-2',
-                        preview?.valid ? 'bg-accent/30 ring-accent' : 'bg-hit/25 ring-hit',
+                        'absolute inset-0 rounded-[22%]',
+                        preview?.valid ? 'bg-accent/15' : 'bg-hit/15',
                       )}
                     />
                   )}
 
                   {/* Shot markers */}
                   {shot === 'MISS' && (
-                    <span className="absolute inset-0 grid place-items-center">
+                    <span className="absolute inset-0 z-[2] grid place-items-center">
                       <span className="size-[22%] rounded-full bg-miss/80" />
                     </span>
                   )}
                   {shot === 'HIT' && (
-                    <span className={cn('absolute inset-0 grid place-items-center', isLast && 'animate-boom')}>
+                    <span className={cn('absolute inset-0 z-[2] grid place-items-center', isLast && 'animate-boom')}>
                       <span className="size-[46%] rounded-full bg-hit shadow-[0_0_12px_2px_rgb(251_113_133/0.7)]" />
                       <span className="absolute size-[20%] rounded-full bg-white/90" />
                     </span>
@@ -197,7 +178,7 @@ export function Board({
                     <span
                       key={lastShot.seq}
                       className={cn(
-                        'pointer-events-none absolute inset-0 rounded-full animate-splash',
+                        'pointer-events-none absolute inset-0 z-[2] rounded-full animate-splash',
                         lastShot.hit ? 'ring-2 ring-hit' : 'ring-2 ring-accent/70',
                       )}
                     />
@@ -207,6 +188,36 @@ export function Board({
             })}
           </Fragment>
         ))}
+
+        {/* Ships drawn as whole sprites spanning their cells, above the water. */}
+        {afloat.map((s) => (
+          <ShipSprite
+            key={`own-${shipKey(s)}`}
+            length={s.length}
+            direction={s.direction}
+            style={gridArea(s)}
+            className="pointer-events-none relative z-[1] size-full drop-shadow-[0_3px_4px_rgb(0_0_0/0.45)]"
+          />
+        ))}
+        {sunkShips?.map((s) => (
+          <ShipSprite
+            key={`sunk-${shipKey(s)}`}
+            length={s.length}
+            direction={s.direction}
+            variant="sunk"
+            style={gridArea(s)}
+            className="pointer-events-none relative z-[1] size-full"
+          />
+        ))}
+        {previewShip && (
+          <ShipSprite
+            length={previewShip.length}
+            direction={previewShip.direction}
+            variant={preview?.valid ? 'ghost' : 'invalid'}
+            style={gridArea(previewShip)}
+            className="pointer-events-none relative z-[1] size-full"
+          />
+        )}
       </div>
     </div>
   );
