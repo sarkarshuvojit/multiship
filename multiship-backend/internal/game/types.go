@@ -49,6 +49,7 @@ type PlayerState struct {
 	Board      [][]CellState `json:"board"`
 	Ships      []ShipState   `json:"ships"`
 	Eliminated bool          `json:"eliminated"`
+	IsBot      bool          `json:"isBot"`
 }
 
 func NewPlayer(sessionID string) *PlayerState {

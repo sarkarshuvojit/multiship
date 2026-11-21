@@ -29,3 +29,8 @@ type SubmitBoardDto struct {
 type RoomIDDto struct {
 	RoomID string `json:"roomId"`
 }
+
+type RemoveBotDto struct {
+	RoomID string `json:"roomId"`
+	BotID  string `json:"botId"`
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppDispatch } from '@/app/hooks';
-import { START_GAME } from '@/ws/actions';
+import { ADD_BOT, REMOVE_BOT, START_GAME } from '@/ws/actions';
 import { cn } from '@/lib/utils';
 import type { RoomView } from '@/types/multiship.types';
 import { Avatar, Button, Chip, Panel } from '../ui';
@@ -77,8 +77,21 @@ export function Lobby({ room, me }: { room: RoomView; me: string }) {
                       {p.name}
                       {p.sessionId === me && <span className="text-slate-500"> (you)</span>}
                     </p>
-                    <p className="mt-0.5 text-xs text-slate-500">{p.isHost ? 'Host' : 'Ready to sail'}</p>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {p.isHost ? 'Host' : p.isBot ? 'Bot · ready to sail' : 'Ready to sail'}
+                    </p>
                   </div>
+                  {isHost && p.isBot && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto sm:ml-0"
+                      aria-label={`Remove ${p.name}`}
+                      onClick={() => dispatch(REMOVE_BOT(room.roomId, p.sessionId))}
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>
@@ -86,6 +99,16 @@ export function Lobby({ room, me }: { room: RoomView; me: string }) {
                     <span className="animate-pulse">⋯</span>
                   </span>
                   <p className="text-sm text-slate-500">Open seat</p>
+                  {isHost && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="ml-auto sm:ml-0"
+                      onClick={() => dispatch(ADD_BOT(room.roomId))}
+                    >
+                      🤖 Add bot
+                    </Button>
+                  )}
                 </>
               )}
             </div>
@@ -100,7 +123,7 @@ export function Lobby({ room, me }: { room: RoomView; me: string }) {
               {canStart ? `Start with ${room.players.length} players` : 'Waiting for a rival…'}
             </Button>
             <p className="text-xs text-slate-500">
-              {canStart ? `Or wait — it starts automatically at ${room.maxPlayers}.` : 'You need at least one opponent.'}
+              {canStart ? `Or wait — it starts automatically at ${room.maxPlayers}.` : 'You need at least one opponent — invite a friend or add a bot.'}
             </p>
           </>
         ) : (

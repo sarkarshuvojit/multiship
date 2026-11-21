@@ -11,4 +11,6 @@ const (
 	StartGame                    = "START_GAME"
 	LeaveRoom                    = "LEAVE_ROOM"
 	Rematch                      = "REMATCH"
+	AddBot                       = "ADD_BOT"
+	RemoveBot                    = "REMOVE_BOT"
 )

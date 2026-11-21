@@ -7,6 +7,8 @@ export enum InboundEventType {
   START_GAME = 'START_GAME',
   LEAVE_ROOM = 'LEAVE_ROOM',
   REMATCH = 'REMATCH',
+  ADD_BOT = 'ADD_BOT',
+  REMOVE_BOT = 'REMOVE_BOT',
 }
 
 export enum OutboundEventType {

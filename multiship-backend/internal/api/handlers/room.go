@@ -339,10 +339,18 @@ func RematchHandler(
 	kept := []string{}
 	players := map[string]game.PlayerState{}
 	for _, id := range room.PlayerSessions {
+		old := room.Players[id]
+		if old.IsBot {
+			// Bots always stay for another round, with a new fleet.
+			resetBotFleet(&old)
+			old.Eliminated = false
+			players[id] = old
+			kept = append(kept, id)
+			continue
+		}
 		if current, ok := repo.GetSessionRoom(db, id); !ok || current != room.RoomID {
 			continue
 		}
-		old := room.Players[id]
 		fresh := *game.NewPlayer(id)
 		fresh.Name, fresh.Avatar = old.Name, old.Avatar
 		players[id] = fresh
@@ -446,6 +454,11 @@ func leaveCurrentRoom(ctx context.Context, sessionID string) {
 			return id == sessionID
 		})
 		delete(room.Players, sessionID)
+		if !hasHuman(room) {
+			// Bots never hold a room on their own.
+			room.PlayerSessions = []string{}
+			room.Players = map[string]game.PlayerState{}
+		}
 		if room.LeaderSessionID == sessionID && len(room.PlayerSessions) > 0 {
 			room.LeaderSessionID = room.PlayerSessions[0]
 		}

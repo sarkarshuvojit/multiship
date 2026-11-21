@@ -26,6 +26,7 @@ export interface PlayerView {
   avatar: string;
   status: ServerPlayerStatus;
   isHost: boolean;
+  isBot: boolean;
   eliminated: boolean;
   board: ServerCellState[][];
   shipsRemaining: number;

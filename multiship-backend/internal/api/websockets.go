@@ -26,6 +26,7 @@ type WebsocketAPI struct {
 	deps   map[utils.ContextKey]any
 
 	disconnectHooks []func(context.Context)
+	roomStateHooks  []func(*game.RoomState)
 }
 
 func NewWebsocketAPI() *WebsocketAPI {
@@ -151,6 +152,23 @@ func (ws WebsocketAPI) SendToRoom(
 // OnDisconnect registers a callback run after a session disconnects.
 func (ws *WebsocketAPI) OnDisconnect(fn func(context.Context)) {
 	ws.disconnectHooks = append(ws.disconnectHooks, fn)
+}
+
+// OnRoomState registers a callback run every time a room snapshot is broadcast.
+// Callbacks must not block.
+func (ws *WebsocketAPI) OnRoomState(fn func(*game.RoomState)) {
+	ws.roomStateHooks = append(ws.roomStateHooks, fn)
+}
+
+// BackgroundContext carries the API and its dependencies but no client
+// session, for server-driven work such as bot turns.
+func (ws *WebsocketAPI) BackgroundContext() context.Context {
+	ctx := utils.ToContext(context.Background(), utils.WebsocketAPI, ws)
+	ctx = utils.ToContext(ctx, utils.Melody, ws.m)
+	for k, v := range ws.deps {
+		ctx = utils.ToContext(ctx, k, v)
+	}
+	return ctx
 }
 
 func createSessionID(s *melody.Session) string {
@@ -284,4 +302,7 @@ func (ws *WebsocketAPI) InitHandlers() error {
 // BroadcastRoomState pushes the public room snapshot to everyone in the room.
 func (ws WebsocketAPI) BroadcastRoomState(room *game.RoomState) {
 	ws.SendToRoom(room, events.RoomStateUpdated, dto.NewRoomView(room, game.MaxPlayers))
+	for _, hook := range ws.roomStateHooks {
+		hook(room)
+	}
 }

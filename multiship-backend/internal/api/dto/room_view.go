@@ -10,6 +10,7 @@ type PlayerView struct {
 	Avatar         string             `json:"avatar"`
 	Status         game.PlayerStatus  `json:"status"`
 	IsHost         bool               `json:"isHost"`
+	IsBot          bool               `json:"isBot"`
 	Eliminated     bool               `json:"eliminated"`
 	Board          [][]game.CellState `json:"board"`
 	ShipsRemaining int                `json:"shipsRemaining"`
@@ -44,6 +45,7 @@ func NewRoomView(room *game.RoomState, maxPlayers int) RoomView {
 			Avatar:         p.Avatar,
 			Status:         p.Status,
 			IsHost:         id == room.LeaderSessionID,
+			IsBot:          p.IsBot,
 			Eliminated:     p.Eliminated,
 			Board:          board,
 			ShipsRemaining: game.ShipsRemaining(p.Ships, p.Board),

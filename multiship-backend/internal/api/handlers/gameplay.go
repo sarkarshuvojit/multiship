@@ -3,11 +3,9 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"slices"
 
-	"github.com/olahol/melody"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/dto"
 	"github.com/sarkarshuvojit/multiship-backend/internal/api/events"
@@ -22,28 +20,29 @@ func TryHitHandler(
 	ctx context.Context,
 	event events.InboundEvent,
 ) error {
-	ws := utils.FromContext[*api.WebsocketAPI](
-		ctx, utils.WebsocketAPI,
-	)
-	s := utils.FromContext[*melody.Session](
-		ctx, utils.Session,
-	)
-	db := utils.FromContext[state.State](
-		ctx, utils.Redis,
-	)
-
 	var payload dto.TryHitDto
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		return err
 	}
 
-	sessionID, found := s.Get("sessionID")
-	if !found {
-		return errors.New("Session not found, please reconnect")
+	sessionID, err := authenticatedSession(ctx)
+	if err != nil {
+		return err
 	}
-	if _, found := db.Get(state.SessionKey(sessionID.(string))); !found {
-		return events.UnauthenticatedErr
-	}
+
+	return fireShot(ctx, payload.RoomID, sessionID, payload.TargetSessionID, payload.X, payload.Y)
+}
+
+// fireShot validates and applies one shot, then tells the room what happened.
+// Shared by human players and bots.
+func fireShot(
+	ctx context.Context,
+	roomID, attackerID, targetID string,
+	x, y int,
+) error {
+	ws := utils.FromContext[*api.WebsocketAPI](ctx, utils.WebsocketAPI)
+	db := utils.FromContext[state.State](ctx, utils.Redis)
+	payload := dto.TryHitDto{RoomID: roomID, TargetSessionID: targetID, X: x, Y: y}
 
 	if !game.InBounds(payload.X, payload.Y) {
 		return events.InvalidCoordinatesErr
@@ -61,7 +60,7 @@ func TryHitHandler(
 		return events.GameNotOngoingErr
 	}
 
-	if !slices.Contains(room.PlayerSessions, sessionID.(string)) {
+	if !slices.Contains(room.PlayerSessions, attackerID) {
 		return events.NotInRoomErr
 	}
 
@@ -69,11 +68,11 @@ func TryHitHandler(
 		return events.TurnNotInitializedErr
 	}
 
-	if room.CurrentPlayer != sessionID.(string) {
+	if room.CurrentPlayer != attackerID {
 		return events.NotPlayersTurnErr
 	}
 
-	if payload.TargetSessionID == sessionID.(string) {
+	if payload.TargetSessionID == attackerID {
 		return events.InvalidTargetErr
 	}
 
@@ -115,7 +114,7 @@ func TryHitHandler(
 
 	ws.SendToRoom(room, events.HitSuccessful, dto.HitAttemptedPayload{
 		RoomID:            room.RoomID,
-		AttackerSessionID: sessionID.(string),
+		AttackerSessionID: attackerID,
 		TargetSessionID:   payload.TargetSessionID,
 		X:                 payload.X,
 		Y:                 payload.Y,
@@ -144,7 +143,7 @@ func TryHitHandler(
 
 	ws.BroadcastRoomState(room)
 
-	slog.Info("Hit attempted", "roomID", room.RoomID, "attacker", sessionID, "target", payload.TargetSessionID, "result", resultState)
+	slog.Info("Hit attempted", "roomID", room.RoomID, "attacker", attackerID, "target", payload.TargetSessionID, "result", resultState)
 
 	if gameOver {
 		ws.SendToRoom(room, events.GameOver, dto.GameOverPayload{

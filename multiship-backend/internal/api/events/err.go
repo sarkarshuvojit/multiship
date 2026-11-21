@@ -30,4 +30,6 @@ var (
 	NotEnoughPlayersErr   = errors.New("Need at least 2 players to start")
 	BoardLockedErr        = errors.New("Boards can no longer be changed")
 	GameNotFinishedErr    = errors.New("Game is still in progress")
+	HostOnlyErr           = errors.New("Only the host can do that")
+	NotABotErr            = errors.New("That player is not a bot")
 )

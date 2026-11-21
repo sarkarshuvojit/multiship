@@ -64,6 +64,9 @@ func setupWebSockets() {
 	wt.HandleEvent(events.StartGame, handlers.StartGameHandler)
 	wt.HandleEvent(events.LeaveRoom, handlers.LeaveRoomHandler)
 	wt.HandleEvent(events.Rematch, handlers.RematchHandler)
+	wt.HandleEvent(events.AddBot, handlers.AddBotHandler)
+	wt.HandleEvent(events.RemoveBot, handlers.RemoveBotHandler)
+	wt.OnRoomState(handlers.BotTurnHook(wt))
 	wt.OnDisconnect(handlers.DisconnectHook)
 }
 
